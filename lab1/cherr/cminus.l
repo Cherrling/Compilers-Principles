@@ -8,10 +8,19 @@ extern YYSTYPE yylval;
 
 void yyerror(const char *s);
 
+#define YY_USER_ACTION \
+    yylloc.first_line = yylloc.last_line = yylineno; \
+    yylloc.first_column = yycolumn; \
+    yylloc.last_column = yycolumn + yyleng - 1; \
+    yycolumn += yyleng;
+
+int yycolumn = 1;
 
 %}
 
 %option noyywrap
+%option yylineno
+
 
 delim       [ \t\n]
 ws          {delim}+
@@ -19,6 +28,10 @@ id          [_a-zA-Z][0-9_a-zA-Z]*
 int         0|[1-9][0-9]*
 float       {int}\.[0-9]+ 
 comment     "/*"[^*]*"*"+([^*/][^*]*"*"+)*"/"
+RELOP >|<|>=|<=|==|!= 
+TYPE int|float 
+
+
 
 IGNORE [\r \t] 
 CHANGELINE [\n] 
@@ -31,10 +44,11 @@ CHANGELINE [\n]
 
 "else"      { return ELSE; }
 "if"        { return IF; }
-"int"       { return INT; }
-"float"     { return FLOAT; }
+"int"       { yylval.string = strdup(yytext); return TYPE; }
+"float"     { yylval.string = strdup(yytext); return TYPE; }
+"void"      { yylval.string = strdup(yytext); return TYPE; }
+
 "return"    { return RETURN; }
-"void"      { return VOID; }
 "while"     { return WHILE; }
 "struct"    { return STRUCT; }
 
@@ -42,12 +56,6 @@ CHANGELINE [\n]
 "-"         { return MINUS; }
 "*"         { return TIMES; }
 "/"         { return DIVIDE; }
-"<"         { return LT; }
-"<="        { return LTE; }
-">"         { return GT; }
-">="        { return GTE; }
-"=="        { return EQ; }
-"!="        { return NEQ; }
 "="         { return ASSIGN; }
 ";"         { return SEMI; }
 ","         { return COMMA; }
@@ -81,6 +89,7 @@ CHANGELINE [\n]
                 yylval.float_number = atof(yytext);
                 return FLOAT;
 }
+
 
 .           { 
                 char msg[32]; // 定义错误信息缓冲区

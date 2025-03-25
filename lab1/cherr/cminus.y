@@ -1,3 +1,4 @@
+%locations
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +28,9 @@ void yyerror(const char *s);
     struct ast_node* node;
 }
 
+
+
+
 %token <int_number> INT 
 %token <float_number> FLOAT  // 添加float数字token
 %token <string> ID
@@ -39,16 +43,10 @@ void yyerror(const char *s);
 %token OR AND DOT NOT 
 
 
-%type <node> program declaration_list declaration var_declaration fun_declaration 
-%type <node> params param_list param compound_stmt local_declarations statement_list 
-%type <node> statement expression_stmt selection_stmt iteration_stmt return_stmt 
-%type <node> expression var simple_expression additive_expression term factor call 
-%type <node> args arg_list
-%type <string> type_specifier relop addop mulop
+%type <node> program ExtDefList ExtDef VarDec FunDec 
 
-%type <node> struct_member struct_member_list  StructSpecifier
-%type <node> Specifier VarDec Exp DefList Def DecList Dec OptTag Tag
-%type <node> array_access
+%type <node> StructSpecifier ExtDecList VarList ParamDec CompSt StmtList Stmt arg_list
+%type <node> Specifier Exp DefList Def DecList Dec OptTag Tag
 
 
 %left LBRACKET RBRACKET
@@ -58,7 +56,7 @@ void yyerror(const char *s);
 %left AND 
 %left COMMA
 %right ASSIGN
-%left EQ NEQ
+%left EQ NEQ RELOP
 %left LT LTE GT GTE
 %left PLUS MINUS
 %left TIMES DIVIDE
@@ -68,408 +66,342 @@ void yyerror(const char *s);
 %%
 
 program
-    : declaration_list { 
-        $$ = $1; 
-        root = $$;  // 将解析完成的AST赋值给root
-        printf("Parsing completed successfully.\n");
+    : ExtDefList { 
+        if ($1 == NULL) {
+            $$ = create_node("Program", 0, @1.first_line);
+        } else if ($1->child_count == 1) {
+            $$ = create_node("Program", 1, $1->linenumber, $1);
+        } else {
+            $$ = create_node("Program", 1, @1.first_line, $1);
+        }
+        root = $$;
     }
     ;
 
-declaration_list
-    : declaration_list declaration { 
-        $$ = create_node("declaration_list", 2, $1, $2); 
+ExtDefList
+    : /* empty */ { 
+        $$ = NULL;  // 空规则直接返回 NULL，不创建节点
     }
-    | declaration { 
-        $$ = create_node("declaration_list", 1, $1); 
-    }
-    ;
-
-declaration
-    : var_declaration { $$ = $1; }
-    | fun_declaration { $$ = $1; }
-    ;
-
-var_declaration
-    : type_specifier ID SEMI {
-        $$ = create_node("var_declaration", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
-    }
-    | STRUCT ID ID SEMI {
-        $$ = create_node("struct_var_declaration", 3,
-            create_str_leaf("STRUCT", "struct"),
-            create_str_leaf("TYPE_ID", $2),
-            create_str_leaf("ID", $3));
-    }
-    | type_specifier ID ASSIGN expression SEMI {
-        $$ = create_node("init_declaration", 3,
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            $4);
-    }
-    | type_specifier ID LBRACKET INT RBRACKET SEMI {
-        $$ = create_node("array_declaration", 3,
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            create_int_leaf("SIZE", $4));
+    | ExtDef ExtDefList { 
+        if ($2 == NULL) {
+            $$ = create_node("ExtDefList", 1, @1.first_line, $1);
+        } else {
+            $$ = create_node("ExtDefList", 2, @1.first_line, $1, $2); 
+            $$ -> val.int_value = 2;
+        }
     }
     ;
 
-type_specifier
-    : INT { $$ = "int"; }
-    | FLOAT { $$ = "float"; }  // 添加float类型支持
-    | VOID { $$ = "void"; }
-    | STRUCT ID {
-        char* type_name = (char*)malloc(strlen($2) + 8);
-        sprintf(type_name, "struct %s", $2);
-        $$ = type_name;
+ExtDef
+    : Specifier ExtDecList SEMI{
+        ast_node* semi_node = create_node("SEMI", 0, @3.first_line);
+        $$=create_node("ExtDef", 3, @1.first_line, $1, $2, semi_node);
+    
+    } 
+    | Specifier SEMI{
+        ast_node* semi_node = create_node("SEMI", 0, @2.first_line);
+        $$=create_node("ExtDef", 2, @1.first_line, $1, semi_node);
+    
+    } 
+    | Specifier FunDec CompSt{
+        $$=create_node("ExtDef", 3, @1.first_line, $1, $2, $3);
+    } 
+    | Specifier error {
+        printError('B', "Missing \";\""); // 打印错误消息
+    }
+
+ExtDecList
+    : VarDec{
+        $$=create_node("ExtDecList", 1, @1.first_line, $1);
+    } 
+    | VarDec COMMA ExtDecList{
+        $$=create_node("ExtDecList", 2, @1.first_line, $1,  $3);
+
+    } 
+    | VarDec error ExtDecList{
+        printError('B', "text"); // 打印错误消息
+    }
+
+Specifier
+    : TYPE { 
+        ast_node* type_node = create_node("TYPE", 0, @1.first_line);
+        type_node->val.str_value = strdup($1);  // 保存类型字符串
+        // 创建Specifier节点
+        $$ = create_node("Specifier", 1, @1.first_line, type_node);
+    }
+    | StructSpecifier { 
+        $$ = create_node("Specifier", 1, @1.first_line, $1); 
     }
     ;
 
-fun_declaration
-    : type_specifier ID LPAREN RPAREN compound_stmt {
-        $$ = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            create_str_leaf("params", "void"),
-            $5);
+
+
+VarDec
+    : ID { 
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存变量名
+        $$ = create_node("VarDec", 1, @1.first_line, id_node); 
     }
-    | type_specifier ID LPAREN params RPAREN compound_stmt {
-        $$ = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            $4, $6);
+    | VarDec LBRACKET INT RBRACKET {
+        ast_node* lb_node = create_node("LB", 0, @2.first_line);
+        ast_node* int_node = create_node("INT", 0, @3.first_line);
+        int_node->val.int_value = $3;
+        ast_node* rb_node = create_node("RB", 0, @4.first_line);
+        $$ = create_node("VarDec", 4, @1.first_line, $1, lb_node, int_node, rb_node); 
+    }
+    | VarDec LBRACKET error RBRACKET {
+        char msg[32]; // 定义错误信息缓冲区
+        sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
+        printError('B', msg); // 打印错误消息
+    }
+    ;
+FunDec
+    :ID LPAREN VarList RPAREN{
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存函数名
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @4.first_line);
+        $$ = create_node("FunDec", 4, @1.first_line, id_node, lp_node, $3, rp_node); 
+    } 
+    | ID LPAREN RPAREN{
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存函数名
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @3.first_line);
+        $$ = create_node("FunDec", 3, @1.first_line, id_node, lp_node, rp_node); 
+    
+    } 
+    | ID LPAREN error RPAREN {
+        printError('B', "Syntax error between ()"); // 打印错误消息
     }
     ;
 
-struct_member
-    : type_specifier ID SEMI {
-        $$ = create_node("struct_member", 2,
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
+VarList
+    : ParamDec COMMA VarList {
+        $$ = create_node("VarList", 2, @1.first_line, $1,  $3); 
+    } 
+    | ParamDec {
+        $$ = create_node("VarList", 1, @1.first_line, $1); 
+    }
+
+ParamDec
+    : Specifier VarDec {
+        $$ = create_node("ParamDec", 2, @1.first_line, $1, $2); 
+    }
+
+CompSt
+    :LBRACE DefList StmtList RBRACE{
+        ast_node* lc_node = create_node("LC", 0, @1.first_line);
+        ast_node* rc_node = create_node("RC", 0, @4.first_line);
+        $$ = create_node("CompSt", 4, @1.first_line, lc_node, $2, $3, rc_node); 
     }
     ;
-struct_member_list
-    : struct_member {
-        $$ = create_node("struct_member_list", 1, $1);
-    }
-    | struct_member_list struct_member {
-        $$ = create_node("struct_member_list", 2, $1, $2);
+
+StmtList
+    : {
+        $$ = NULL;
+    } 
+    | Stmt StmtList{
+        $$ = create_node("StmtList", 2, @1.first_line, $1, $2); 
     }
     ;
+
+
+Stmt
+    : Exp SEMI {
+        ast_node* semi_node = create_node("SEMI", 0, @2.first_line);
+        $$ = create_node("Stmt", 2, @1.first_line, $1, semi_node); 
+    
+    }
+    | CompSt {
+        $$ = create_node("Stmt", 1, @1.first_line, $1); 
+    }
+    | RETURN Exp SEMI {
+        $$ = create_node("Stmt", 1, @1.first_line, $2); 
+    }
+    | IF LPAREN Exp RPAREN Stmt ELSE Stmt {
+        $$ = create_node("Stmt", 3, @1.first_line,  $3, $5, $7); 
+    }
+    | WHILE LPAREN Exp RPAREN Stmt {
+        $$ = create_node("Stmt", 2, @1.first_line, $3, $5); 
+    }
+    | Exp error {
+        printError('B', "Missing \";\""); // 打印错误消息
+    }
+
 StructSpecifier
-    : STRUCT ID LBRACE struct_member_list RBRACE {
-        $$ = create_node("struct_definition", 3,
-            create_str_leaf("STRUCT", "struct"),
-            create_str_leaf("ID", $2),
-            $4);
-    }
-    | STRUCT ID LBRACE error RBRACE {
-        Err = 1;
-        if (lastErrLineno != yylineno)
-            printError('B', "Invalid struct definition");
+    : STRUCT OptTag LBRACE DefList RBRACE {
+        $$ = create_node("StructSpecifier", 2, @1.first_line, $2, $4); 
+    } 
+    | STRUCT Tag {
+        $$ = create_node("StructSpecifier", 1, @1.first_line, $2); 
     }
     ;
 
 
 OptTag
     : /* empty */ {
-        $$ = NULL;
+        $$ = create_node("OptTag", 0, 0);
+        $$ -> val.int_value = 0; 
+
     }
     | ID {
-        $$ = create_str_leaf("ID", $1);
+        $$ = create_node("OptTag", 0, @1.first_line); 
+
     }
     ;
 
 Tag
     : ID {
-        $$ = create_str_leaf("ID", $1);
+        $$ = create_node("Tag", 0, @1.first_line); 
+
     }
     ;
 
-Specifier
-    : TYPE { 
-        $$ = create_str_leaf("TYPE", $1);
+DefList
+    : /* empty */ { 
+        $$ = NULL;
+
     }
-    | StructSpecifier { 
-        $$ = $1;
+    | Def DefList {
+        $$ = create_node("DefList", 2, @1.first_line, $1, $2);
     }
     ;
-
-// 修改数组访问相关的规则
-VarDec
-    : ID { 
-        $$ = create_str_leaf("ID", $1);
-    }
-    | VarDec LBRACKET INT RBRACKET {
-        $$ = create_node("array_decl", 2, 
-            $1, 
-            create_int_leaf("size", $3));
-    }
-    | VarDec LBRACKET error RBRACKET {
-        Err = 1;
-        if (lastErrLineno != yylineno)
-            printError('B', "Invalid array size");
-    }
-    ;
-
-
-
 
 Def
     : Specifier DecList SEMI {
-        $$ = create_node("def", 3, $1, $2, create_str_leaf("SEMI", ";"));
+        $$ = create_node("Def", 2, @1.first_line, $1, $2); 
+
     }
     | Specifier error SEMI {
-        Err = 1;
-        if (lastErrLineno != yylineno)
-            printError('B', "Invalid variable definition");
+        char msg[32]; // 定义错误信息缓冲区
+        sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
+        printError('B', msg); // 打印错误消息
+    }
+    | Specifier DecList error {
+        printError('B',"Missing \";\""); // 打印错误消息
+    }
+    ;
+
+
+DecList
+    : Dec {
+        $$ = create_node("DecList", 1, @1.first_line, $1); 
+    }
+    | Dec COMMA DecList {
+        $$ = create_node("DecList", 2, @1.first_line, $1, $3); 
     }
     ;
 Dec
     : VarDec {
-        $$ = $1;
+        $$ = create_node("Dec", 1, @1.first_line, $1); // 将 VarDec 作为 Dec 的子节点
     }
     | VarDec ASSIGN Exp {
-        $$ = create_node("init_dec", 3, $1, 
-            create_str_leaf("ASSIGN", "="), $3);
+        ast_node* assign_node = create_node("ASSIGN", 0, @2.first_line);
+        assign_node->val.str_value = "=";
+        $$ = create_node("Dec", 3, @1.first_line, $1, assign_node, $3); 
     }
     ;
-DefList
-    : /* empty */ { 
-        $$ = NULL;
-    }
-    | Def DefList {
-        if ($2 == NULL) {
-            $$ = create_node("DefList", 1, $1);
-        } else {
-            $$ = create_node("DefList", 2, $1, $2);
-        }
-    }
-    ;
-DecList
-    : Dec {
-        $$ = create_node("declist", 1, $1);
-    }
-    | Dec COMMA DecList {
-        $$ = create_node("declist", 3, $1, 
-            create_str_leaf("COMMA", ","), $3);
-    }
-    ;
+
 
 
 Exp
     : ID { 
-        $$ = create_str_leaf("ID", $1);
+        $$ = create_node("ID",0 , @1.first_line);
+        $$->val.str_value = strdup($1);  // 保存ID的值
     }
     | Exp DOT ID {
-        $$ = create_node("struct_access", 3,
-            $1,
-            create_str_leaf("DOT", "."),
-            create_str_leaf("ID", $3));
+        $$ = create_node("struct_access",1 , @1.first_line, $1);
     }
     | INT { 
-        $$ = create_int_leaf("INT", $1);
+        ast_node* int_node = create_node("INT", 0, @1.first_line);
+        int_node->val.int_value = $1;  // 保存整数值
+        $$ = create_node("Exp", 1, @1.first_line, int_node);
     }
     | FLOAT {
-        $$ = create_float_leaf("FLOAT", $1);
+        ast_node* float_node = create_node("FLOAT", 0, @1.first_line);
+        float_node->val.float_value = $1;  // 保存整数值
+        $$ = create_node("Exp", 1, @1.first_line, float_node);
     }
+    | Exp ASSIGN Exp {
+        ast_node* assign_node = create_node("ASSIGN", 0, @2.first_line);
+        assign_node->val.str_value = "=";
+        ast_node* left_exp = create_node("Exp", 1, @1.first_line, $1);
+        $$ = create_node("Exp", 3, @1.first_line, left_exp, assign_node, $3);
+    } 
     | Exp PLUS Exp {
-        $$ = create_node("add", 2, $1, $3);
+        ast_node* plus_node = create_node("PLUS", 0, @2.first_line);
+        ast_node* left_exp = create_node("Exp", 1, @1.first_line, $1);
+        ast_node* right_exp = create_node("Exp", 1, @3.first_line, $3);
+        $$ = create_node("Exp", 3, @1.first_line, left_exp, plus_node, right_exp);
     }
     | Exp MINUS Exp {
-        $$ = create_node("sub", 2, $1, $3);
+        $$ = create_node("minus",2 , @1.first_line, $1, $3);
     }
     | Exp TIMES Exp {
-        $$ = create_node("mul", 2, $1, $3);
+        $$ = create_node("mul",2 , @1.first_line, $1, $3);
     }
     | Exp DIVIDE Exp {
-        $$ = create_node("div", 2, $1, $3);
+        $$ = create_node("div",2 , @1.first_line, $1, $3);
+    }
+    | Exp RELOP Exp {
+        $$ = create_node("RELOP",2 , @1.first_line, $1, $3);
+    }     
+    | Exp AND Exp {
+        $$ = create_node("AND",2 , @1.first_line, $1, $3);
+    } 
+    | Exp OR Exp {
+        $$ = create_node("OR",2 , @1.first_line, $1, $3);
+    }     
+    | NOT Exp{
+        $$ = create_node("NOT",1 , @1.first_line, $2);
+    }
+    | ID LPAREN RPAREN {
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @3.first_line);
+        $$ = create_node("CALL", 3, @1.first_line, id_node, lp_node, rp_node);
+    } 
+    | ID LPAREN arg_list RPAREN{
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @4.first_line);
+        $$ = create_node("CALL", 4, @1.first_line, id_node, lp_node, $3, rp_node);
+    } 
+    | Exp LBRACKET Exp RBRACKET {
+        ast_node* lb_node = create_node("LB", 0, @2.first_line);
+        ast_node* rb_node = create_node("RB", 0, @4.first_line);
+        $$ = create_node("array_access", 4, @1.first_line, $1, lb_node, $3, rb_node);
     }
     | LPAREN Exp RPAREN {
-        $$ = $2;
+        ast_node* lp_node = create_node("LP", 0, @1.first_line);
+        ast_node* rp_node = create_node("RP", 0, @3.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, lp_node, $2, rp_node);
     }
     | Exp LBRACKET Exp error RBRACKET {
         printError('B', "Missing \"]\"");
     }
-    ;
-
-
-params
-    : param_list { $$ = $1; }
-    | VOID { $$ = create_str_leaf("void_params", "void"); }
-    ;
-
-param_list
-    : param_list COMMA param {
-        $$ = create_node("param_list", 2, $1, $3);
+    | Exp LBRACE error RBRACE {
+        printError('B', "Syntax error between \"[]\""); // 打印错误消息
     }
-    | param { $$ = create_node("param_list", 1, $1); }
-    ;
-
-param
-    : type_specifier ID {
-        $$ = create_node("param", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
-    }
-    | type_specifier ID LBRACKET RBRACKET {
-        $$ = create_node("param_array", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
-    }
-    ;
-
-compound_stmt
-    : LBRACE local_declarations statement_list RBRACE {
-        $$ = create_node("compound_stmt", 2, $2, $3);
-    }
-    ;
-
-local_declarations
-    : local_declarations var_declaration {
-        $$ = create_node("local_declarations", 2, $1, $2);
-    }
-    | /* empty */ { $$ = NULL; }
-    ;
-
-statement_list
-    : statement_list statement {
-        $$ = create_node("statement_list", 2, $1, $2);
-    }
-    | /* empty */ { $$ = NULL; }
-    ;
-
-statement
-    : expression_stmt { $$ = $1; }
-    | compound_stmt { $$ = $1; }
-    | selection_stmt { $$ = $1; }
-    | iteration_stmt { $$ = $1; }
-    | return_stmt { $$ = $1; }
-    ;
-
-expression_stmt
-    : expression SEMI { $$ = $1; }
-    | SEMI { $$ = NULL; }
-    ;
-
-selection_stmt
-    : IF LPAREN expression RPAREN statement SEMI ELSE statement SEMI {
-        $$ = create_node("if_else_stmt", 3, $3, $5, $8);
-    }
-    | IF LPAREN expression RPAREN statement SEMI {
-        $$ = create_node("if_stmt", 2, $3, $5);
-    }
-    ;
+    | ID LPAREN error RPAREN {
+        printError('B', "Syntax error in Exp"); // 打印错误消息
+    } 
 
 
-iteration_stmt
-    : WHILE LPAREN expression RPAREN statement {
-        $$ = create_node("while_stmt", 2, $3, $5);
-    }
     ;
 
-return_stmt
-    : RETURN SEMI { $$ = create_str_leaf("return", "return"); }
-    | RETURN expression SEMI { $$ = create_node("return_expr", 1, $2); }
-    ;
-
-expression
-    : var ASSIGN expression {
-        $$ = create_node("assign", 2, $1, $3);
-    }
-    | simple_expression { $$ = $1; }
-    ;
-
-/* 数组访问 */
-var
-    : ID { 
-        $$ = create_str_leaf("var", $1); 
-    }
-    | ID LBRACKET expression RBRACKET { 
-        $$ = create_node("array_access", 2, create_str_leaf("ID", $1), $3); 
-    }
-    | ID LBRACKET expression COMMA expression RBRACKET {
-        fprintf(stderr, "Error type B at Line %d: Missing \"]\".\n", yylineno);
-        YYERROR;
-    }
-    ;
-
-simple_expression
-    : additive_expression relop additive_expression {
-        $$ = create_node("rel_expr", 3, $1, create_str_leaf("relop", $2), $3);
-    }
-    | additive_expression { $$ = $1; }
-    ;
-
-relop
-    : LTE { $$ = "<="; }
-    | LT { $$ = "<"; }
-    | GT { $$ = ">"; }
-    | GTE { $$ = ">="; }
-    | EQ { $$ = "=="; }
-    | NEQ { $$ = "!="; }
-    ;
-
-additive_expression
-    : additive_expression addop term {
-        $$ = create_node("add_expr", 3, $1, create_str_leaf("addop", $2), $3);
-    }
-    | term { $$ = $1; }
-    ;
-
-addop
-    : PLUS { $$ = "+"; }
-    | MINUS { $$ = "-"; }
-    ;
-
-term
-    : term mulop factor {
-        $$ = create_node("mul_expr", 3, $1, create_str_leaf("mulop", $2), $3);
-    }
-    | factor { $$ = $1; }
-    ;
-
-mulop
-    : TIMES { $$ = "*"; }
-    | DIVIDE { $$ = "/"; }
-    ;
-
-factor
-    : LPAREN expression RPAREN { $$ = $2; }
-    | var { $$ = $1; }
-    | call { $$ = $1; }
-    | INT { $$ = create_int_leaf("INT", $1); }
-    ;
-
-call
-    : ID LPAREN args RPAREN {
-        $$ = create_node("call", 2, 
-            create_str_leaf("ID", $1), $3);
-    }
-    ;
-
-args
-    : arg_list { $$ = $1; }
-    | /* empty */ { $$ = NULL; }
-    ;
 
 arg_list
-    : arg_list COMMA expression {
-        $$ = create_node("arg_list", 2, $1, $3);
+    : Exp COMMA arg_list {
+        $$ = create_node("arg_list", 2, @1.first_line, $1, $3);
     }
-    | expression { $$ = create_node("arg_list", 1, $1); }
+    | Exp { 
+        $$ = create_node("arg_list", 1, @1.first_line, $1); 
+    }
     ;
 
-
-/* 在适当的位置添加错误恢复规则 */
-statement
-    : expression_stmt
-    | compound_stmt
-    | selection_stmt
-    | iteration_stmt
-    | return_stmt
-    ;
 
 %%
-

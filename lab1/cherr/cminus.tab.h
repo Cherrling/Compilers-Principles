@@ -87,7 +87,8 @@ extern int yydebug;
     AND = 288,                     /* AND  */
     DOT = 289,                     /* DOT  */
     NOT = 290,                     /* NOT  */
-    THEN = 291                     /* THEN  */
+    RELOP = 291,                   /* RELOP  */
+    THEN = 292                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -96,14 +97,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 23 "cminus.y"
+#line 24 "cminus.y"
 
     int int_number;
     float float_number;  // 添加float类型
     char* string;
     struct ast_node* node;
 
-#line 107 "cminus.tab.h"
+#line 108 "cminus.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -111,9 +112,23 @@ typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+/* Location type.  */
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
+
 
 extern YYSTYPE yylval;
-
+extern YYLTYPE yylloc;
 
 int yyparse (void);
 

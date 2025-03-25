@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     yyrestart(yyin);
 
     yyparse();
-    
+
     if (Err) {
         return 1;
     }
@@ -37,7 +37,6 @@ int main(int argc, char** argv) {
     if (root != NULL) {
         printf("\nAbstract Syntax Tree:\n");
         print_ast(root, 0);
-        free_ast(root);
     }
 
     fclose(yyin);

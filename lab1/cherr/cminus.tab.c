@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "cminus.y"
+#line 2 "cminus.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -153,37 +153,30 @@ enum yysymbol_kind_t
   YYSYMBOL_AND = 33,                       /* AND  */
   YYSYMBOL_DOT = 34,                       /* DOT  */
   YYSYMBOL_NOT = 35,                       /* NOT  */
-  YYSYMBOL_THEN = 36,                      /* THEN  */
-  YYSYMBOL_YYACCEPT = 37,                  /* $accept  */
-  YYSYMBOL_program = 38,                   /* program  */
-  YYSYMBOL_declaration_list = 39,          /* declaration_list  */
-  YYSYMBOL_declaration = 40,               /* declaration  */
-  YYSYMBOL_var_declaration = 41,           /* var_declaration  */
-  YYSYMBOL_type_specifier = 42,            /* type_specifier  */
-  YYSYMBOL_fun_declaration = 43,           /* fun_declaration  */
-  YYSYMBOL_params = 44,                    /* params  */
-  YYSYMBOL_param_list = 45,                /* param_list  */
-  YYSYMBOL_param = 46,                     /* param  */
-  YYSYMBOL_compound_stmt = 47,             /* compound_stmt  */
-  YYSYMBOL_local_declarations = 48,        /* local_declarations  */
-  YYSYMBOL_statement_list = 49,            /* statement_list  */
-  YYSYMBOL_statement = 50,                 /* statement  */
-  YYSYMBOL_expression_stmt = 51,           /* expression_stmt  */
-  YYSYMBOL_selection_stmt = 52,            /* selection_stmt  */
-  YYSYMBOL_iteration_stmt = 53,            /* iteration_stmt  */
-  YYSYMBOL_return_stmt = 54,               /* return_stmt  */
-  YYSYMBOL_expression = 55,                /* expression  */
-  YYSYMBOL_var = 56,                       /* var  */
-  YYSYMBOL_simple_expression = 57,         /* simple_expression  */
-  YYSYMBOL_relop = 58,                     /* relop  */
-  YYSYMBOL_additive_expression = 59,       /* additive_expression  */
-  YYSYMBOL_addop = 60,                     /* addop  */
-  YYSYMBOL_term = 61,                      /* term  */
-  YYSYMBOL_mulop = 62,                     /* mulop  */
-  YYSYMBOL_factor = 63,                    /* factor  */
-  YYSYMBOL_call = 64,                      /* call  */
-  YYSYMBOL_args = 65,                      /* args  */
-  YYSYMBOL_arg_list = 66                   /* arg_list  */
+  YYSYMBOL_RELOP = 36,                     /* RELOP  */
+  YYSYMBOL_THEN = 37,                      /* THEN  */
+  YYSYMBOL_YYACCEPT = 38,                  /* $accept  */
+  YYSYMBOL_program = 39,                   /* program  */
+  YYSYMBOL_ExtDefList = 40,                /* ExtDefList  */
+  YYSYMBOL_ExtDef = 41,                    /* ExtDef  */
+  YYSYMBOL_ExtDecList = 42,                /* ExtDecList  */
+  YYSYMBOL_Specifier = 43,                 /* Specifier  */
+  YYSYMBOL_VarDec = 44,                    /* VarDec  */
+  YYSYMBOL_FunDec = 45,                    /* FunDec  */
+  YYSYMBOL_VarList = 46,                   /* VarList  */
+  YYSYMBOL_ParamDec = 47,                  /* ParamDec  */
+  YYSYMBOL_CompSt = 48,                    /* CompSt  */
+  YYSYMBOL_StmtList = 49,                  /* StmtList  */
+  YYSYMBOL_Stmt = 50,                      /* Stmt  */
+  YYSYMBOL_StructSpecifier = 51,           /* StructSpecifier  */
+  YYSYMBOL_OptTag = 52,                    /* OptTag  */
+  YYSYMBOL_Tag = 53,                       /* Tag  */
+  YYSYMBOL_DefList = 54,                   /* DefList  */
+  YYSYMBOL_Def = 55,                       /* Def  */
+  YYSYMBOL_DecList = 56,                   /* DecList  */
+  YYSYMBOL_Dec = 57,                       /* Dec  */
+  YYSYMBOL_Exp = 58,                       /* Exp  */
+  YYSYMBOL_arg_list = 59                   /* arg_list  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -450,13 +443,15 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
-         || (defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
+         || (defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL \
+             && defined YYSTYPE_IS_TRIVIAL && YYSTYPE_IS_TRIVIAL)))
 
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
   yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
+  YYLTYPE yyls_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
@@ -465,8 +460,9 @@ union yyalloc
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE)) \
-      + YYSTACK_GAP_MAXIMUM)
+     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE) \
+             + YYSIZEOF (YYLTYPE)) \
+      + 2 * YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
 
@@ -509,21 +505,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  12
+#define YYFINAL  11
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   120
+#define YYLAST   283
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  37
+#define YYNTOKENS  38
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  30
+#define YYNNTS  22
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  74
+#define YYNRULES  67
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  119
+#define YYNSTATES  127
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   291
+#define YYMAXUTOK   292
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -566,21 +562,20 @@ static const yytype_int8 yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36
+      35,    36,    37
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    71,    71,    79,    82,    88,    89,    93,    98,   104,
-     110,   119,   120,   121,   122,   130,   137,   299,   300,   304,
-     307,   311,   316,   324,   330,   333,   337,   340,   344,   345,
-     346,   347,   348,   352,   353,   357,   360,   367,   373,   374,
-     378,   381,   386,   389,   392,   399,   402,   406,   407,   408,
-     409,   410,   411,   415,   418,   422,   423,   427,   430,   434,
-     435,   439,   440,   441,   442,   446,   453,   454,   458,   461,
-     467,   468,   469,   470,   471
+       0,    69,    69,    82,    85,    96,   101,   106,   109,   114,
+     117,   121,   126,   132,   140,   145,   152,   159,   166,   174,
+     180,   183,   188,   193,   201,   204,   211,   216,   219,   222,
+     225,   228,   233,   236,   243,   248,   255,   262,   266,   272,
+     276,   281,   288,   291,   296,   299,   309,   313,   316,   321,
+     326,   332,   338,   341,   344,   347,   350,   353,   356,   359,
+     366,   373,   378,   383,   386,   389,   398,   401
 };
 #endif
 
@@ -600,13 +595,11 @@ static const char *const yytname[] =
   "TYPE", "ELSE", "IF", "RETURN", "VOID", "WHILE", "STRUCT", "PLUS",
   "MINUS", "TIMES", "DIVIDE", "LT", "LTE", "GT", "GTE", "EQ", "NEQ",
   "ASSIGN", "SEMI", "COMMA", "LPAREN", "RPAREN", "LBRACKET", "RBRACKET",
-  "LBRACE", "RBRACE", "OR", "AND", "DOT", "NOT", "THEN", "$accept",
-  "program", "declaration_list", "declaration", "var_declaration",
-  "type_specifier", "fun_declaration", "params", "param_list", "param",
-  "compound_stmt", "local_declarations", "statement_list", "statement",
-  "expression_stmt", "selection_stmt", "iteration_stmt", "return_stmt",
-  "expression", "var", "simple_expression", "relop", "additive_expression",
-  "addop", "term", "mulop", "factor", "call", "args", "arg_list", YY_NULLPTR
+  "LBRACE", "RBRACE", "OR", "AND", "DOT", "NOT", "RELOP", "THEN",
+  "$accept", "program", "ExtDefList", "ExtDef", "ExtDecList", "Specifier",
+  "VarDec", "FunDec", "VarList", "ParamDec", "CompSt", "StmtList", "Stmt",
+  "StructSpecifier", "OptTag", "Tag", "DefList", "Def", "DecList", "Dec",
+  "Exp", "arg_list", YY_NULLPTR
 };
 
 static const char *
@@ -616,32 +609,33 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-32)
+#define YYPACT_NINF (-58)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF (-19)
+#define YYTABLE_NINF (-36)
 
 #define yytable_value_is_error(Yyn) \
   0
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-static const yytype_int8 yypact[] =
+static const yytype_int16 yypact[] =
 {
-      46,   -32,   -32,   -32,    -1,    12,    46,   -32,   -32,     1,
-     -32,    10,   -32,   -32,    54,    15,     6,   -32,    34,    48,
-     -32,   -32,   -23,     6,    29,    37,   -32,    49,     2,   -32,
-     -32,    47,    71,    61,    87,    66,    70,   -32,    65,     6,
-       6,    72,   -32,     6,   -32,   -32,   -32,   -32,   -32,   -32,
-     -32,   -32,     6,     6,   -32,   -32,     6,   -32,   -32,   -32,
-      68,    61,    69,    73,   -32,    74,    75,    23,   -32,   -32,
-     -32,    20,     2,   -32,    46,    76,   -32,   -32,   -32,   -32,
-       6,     6,   -32,   -32,    93,     5,   -32,   -32,    77,    31,
-      78,    16,    81,   -32,   -32,   -32,   -32,   -32,   -32,   -32,
-     -32,    79,   -32,     6,   -32,    84,     6,   -32,    82,   -32,
-      83,    17,    17,    88,   -32,    95,    17,    89,   -32
+      27,   -58,    -1,    28,   -58,    27,     6,   -58,    13,    40,
+     -58,   -58,   -58,   -58,    32,   -58,    37,    21,    55,    27,
+      88,   -58,    93,    93,   100,    27,   -58,    43,    71,    27,
+      77,   -58,    93,    89,    81,   -58,   -58,   -58,    90,    94,
+      79,    98,   -15,    11,    99,   -58,   -58,   -58,   104,   -58,
+      27,   -58,   -58,   -58,   -58,    91,   102,    33,   112,    33,
+      33,   -58,    87,    79,    39,   -58,    33,   -58,   -58,    93,
+     -58,    15,    33,    97,    33,   121,   217,   -58,   -58,   -58,
+      33,    33,    33,    33,    33,   -58,    33,   138,    33,    33,
+     135,    33,   217,   -58,   114,   -58,   145,   115,   169,   -58,
+     193,   -58,    92,    92,   109,   109,   245,    63,   116,   221,
+     245,   -58,   249,   -58,    33,   -58,    79,    79,   117,   -58,
+     -58,   -58,   143,   -58,   -58,    79,   -58
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -649,34 +643,35 @@ static const yytype_int8 yypact[] =
    means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
-       0,    11,    12,    13,     0,     0,     2,     4,     5,     0,
-       6,     0,     1,     3,     0,     0,     0,     7,     0,     0,
-       8,    64,    42,     0,     0,    62,    41,    46,    54,    58,
-      63,    13,     0,     0,     0,     0,    17,    20,     0,    67,
-       0,     0,     9,     0,    55,    56,    48,    47,    49,    50,
-      51,    52,     0,     0,    59,    60,     0,    14,    25,    15,
-      21,     0,     0,     0,    69,     0,    66,     0,    61,    40,
-      62,    45,    53,    57,    27,     0,    16,    19,    10,    65,
-       0,     0,    43,    24,     0,     0,    22,    68,     0,     0,
-       0,     0,     0,    34,    23,    29,    26,    28,    30,    31,
-      32,     0,    44,     0,    38,     0,     0,    33,     0,    39,
-       0,     0,     0,     0,    37,    36,     0,     0,    35
+       3,    12,    34,     0,     2,     3,     0,    13,    36,     0,
+      33,     1,     4,     8,    14,     6,     0,     0,     0,    37,
+       0,     5,     0,     0,     0,    37,     7,     0,     0,    37,
+       0,    18,     0,     0,    21,    14,    11,    10,     0,     0,
+      24,     0,    44,     0,    42,    32,    38,    19,    22,    17,
+       0,    16,    15,    48,    49,    46,     0,     0,     0,     0,
+       0,    27,     0,    24,     0,    40,     0,    41,    39,     0,
+      20,     0,     0,     0,     0,     0,    58,    23,    25,    31,
+       0,     0,     0,     0,     0,    26,     0,     0,     0,     0,
+       0,     0,    45,    43,     0,    59,    67,     0,     0,    28,
+       0,    62,    51,    52,    53,    54,    50,     0,     0,    57,
+      56,    47,    55,    65,     0,    60,     0,     0,     0,    61,
+      64,    66,     0,    30,    63,     0,    29
 };
 
 /* YYPGOTO[NTERM-NUM].  */
-static const yytype_int8 yypgoto[] =
+static const yytype_int16 yypgoto[] =
 {
-     -32,   -32,   -32,   105,    40,   -17,   -32,   -32,   -32,    53,
-     -31,   -32,   -32,   -28,   -32,   -32,   -32,   -32,   -16,    33,
-     -32,   -32,    64,   -32,    67,   -32,    62,   -32,   -32,   -32
+     -58,   -58,   140,   -58,    58,     1,   -22,   -58,   106,   -58,
+     134,   101,   -51,   -58,   -58,   -58,    31,   -58,    96,   -58,
+     -57,    48
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     5,     6,     7,     8,     9,    10,    35,    36,    37,
-      95,    74,    85,    96,    97,    98,    99,   100,   101,    25,
-      26,    52,    27,    53,    28,    56,    29,    30,    65,    66
+       0,     3,     4,     5,    16,    27,    17,    18,    33,    34,
+      61,    62,    63,     7,     9,    10,    28,    29,    43,    44,
+      64,    97
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -684,80 +679,111 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      24,    34,    59,    39,    11,    40,    14,    41,    21,    21,
-      22,    22,    12,    90,    91,    15,    92,    54,    55,    21,
-      21,    22,    22,    64,    67,    90,    91,    69,    92,    93,
-      76,    23,    23,    44,    45,    58,    94,     1,     2,    20,
-     104,    93,    23,    23,    31,    34,    32,    58,    81,     1,
-       2,    38,    82,    42,    16,    17,     3,    84,     4,    19,
-      43,    33,    44,    45,    87,    88,    46,    47,    48,    49,
-      50,    51,     1,     2,   -18,   105,    57,    16,    17,     3,
-      18,    32,    19,   113,   114,    70,    70,   108,   117,    70,
-     110,    58,    60,    61,    63,    62,    75,    78,    89,    68,
-      80,    79,   116,   107,   103,    86,   102,   106,   109,   111,
-     112,    13,   115,   118,    83,    77,    71,     0,    73,     0,
-      72
+      73,     6,    75,    76,     8,    42,     6,    13,    66,    92,
+      48,    14,    67,    24,    96,    98,    94,   100,    53,    54,
+      55,    32,    22,   102,   103,   104,   105,   106,    11,   107,
+      15,   109,   110,     1,   112,    68,    53,    54,    55,     2,
+      79,    59,    95,   -35,    41,    -9,    23,    42,    35,    24,
+      60,    32,    80,    81,    82,    83,    40,    96,    20,    59,
+      46,    21,    84,    85,   118,   122,   123,    86,    60,    87,
+      19,    88,    89,    90,   126,    91,    80,    81,    82,    83,
+      36,    37,    53,    54,    55,    25,    84,    56,    57,    30,
+      58,    86,   119,    87,     1,    88,    89,    90,    35,    91,
+       2,    38,    45,    39,    47,    59,    50,    82,    83,    25,
+      80,    81,    82,    83,    60,    31,    49,    71,    77,    51,
+      84,    99,    65,    52,    69,    86,    90,    87,    72,    88,
+      89,    90,    24,    91,    80,    81,    82,    83,    74,   108,
+     111,   113,   115,    90,    84,    12,   124,   120,   101,    86,
+     125,    87,    26,    88,    89,    90,    70,    91,    80,    81,
+      82,    83,   121,     0,    78,    93,     0,     0,    84,     0,
+     114,     0,     0,    86,     0,    87,     0,    88,    89,    90,
+       0,    91,    80,    81,    82,    83,     0,     0,     0,     0,
+       0,     0,    84,     0,     0,     0,   116,    86,     0,    87,
+       0,    88,    89,    90,     0,    91,    80,    81,    82,    83,
+       0,     0,     0,     0,     0,     0,    84,     0,     0,     0,
+     117,    86,     0,    87,     0,    88,    89,    90,     0,    91,
+      80,    81,    82,    83,    80,    81,    82,    83,     0,     0,
+      84,     0,     0,     0,    84,    86,     0,    87,     0,    88,
+      89,    90,     0,    91,    89,    90,     0,    91,    80,    81,
+      82,    83,    80,    81,    82,    83,     0,     0,    84,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,    90,
+       0,    91,     0,    90
 };
 
 static const yytype_int8 yycheck[] =
 {
-      16,    18,    33,    26,     5,    28,     5,    23,     3,     3,
-       5,     5,     0,     8,     9,     5,    11,    15,    16,     3,
-       3,     5,     5,    39,    40,     8,     9,    43,    11,    24,
-      61,    26,    26,    13,    14,    30,    31,     3,     4,    24,
-      24,    24,    26,    26,    10,    62,    12,    30,    25,     3,
-       4,     3,    29,    24,    23,    24,    10,    74,    12,    28,
-      23,    27,    13,    14,    80,    81,    17,    18,    19,    20,
-      21,    22,     3,     4,    27,    91,     5,    23,    24,    10,
-      26,    12,    28,   111,   112,    52,    53,   103,   116,    56,
-     106,    30,     5,    27,    29,    25,    28,    24,     5,    27,
-      25,    27,     7,    24,    26,    29,    29,    26,    24,    27,
-      27,     6,    24,    24,    74,    62,    52,    -1,    56,    -1,
-      53
+      57,     0,    59,    60,     5,    27,     5,     1,    23,    66,
+      32,     5,     1,    28,    71,    72,     1,    74,     3,     4,
+       5,    20,     1,    80,    81,    82,    83,    84,     0,    86,
+      24,    88,    89,     6,    91,    24,     3,     4,     5,    12,
+       1,    26,    27,    30,     1,    24,    25,    69,     5,    28,
+      35,    50,    13,    14,    15,    16,    25,   114,    26,    26,
+      29,    24,    23,    24,     1,   116,   117,    28,    35,    30,
+      30,    32,    33,    34,   125,    36,    13,    14,    15,    16,
+      22,    23,     3,     4,     5,    30,    23,     8,     9,     1,
+      11,    28,    29,    30,     6,    32,    33,    34,     5,    36,
+      12,     1,    31,     3,    27,    26,    25,    15,    16,    30,
+      13,    14,    15,    16,    35,    27,    27,    26,    31,    29,
+      23,    24,    24,    29,    25,    28,    34,    30,    26,    32,
+      33,    34,    28,    36,    13,    14,    15,    16,    26,     1,
+       5,    27,    27,    34,    23,     5,    29,    31,    27,    28,
+       7,    30,    18,    32,    33,    34,    50,    36,    13,    14,
+      15,    16,   114,    -1,    63,    69,    -1,    -1,    23,    -1,
+      25,    -1,    -1,    28,    -1,    30,    -1,    32,    33,    34,
+      -1,    36,    13,    14,    15,    16,    -1,    -1,    -1,    -1,
+      -1,    -1,    23,    -1,    -1,    -1,    27,    28,    -1,    30,
+      -1,    32,    33,    34,    -1,    36,    13,    14,    15,    16,
+      -1,    -1,    -1,    -1,    -1,    -1,    23,    -1,    -1,    -1,
+      27,    28,    -1,    30,    -1,    32,    33,    34,    -1,    36,
+      13,    14,    15,    16,    13,    14,    15,    16,    -1,    -1,
+      23,    -1,    -1,    -1,    23,    28,    -1,    30,    -1,    32,
+      33,    34,    -1,    36,    33,    34,    -1,    36,    13,    14,
+      15,    16,    13,    14,    15,    16,    -1,    -1,    23,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    34,
+      -1,    36,    -1,    34
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,     3,     4,    10,    12,    38,    39,    40,    41,    42,
-      43,     5,     0,    40,     5,     5,    23,    24,    26,    28,
-      24,     3,     5,    26,    55,    56,    57,    59,    61,    63,
-      64,    10,    12,    27,    42,    44,    45,    46,     3,    26,
-      28,    55,    24,    23,    13,    14,    17,    18,    19,    20,
-      21,    22,    58,    60,    15,    16,    62,     5,    30,    47,
-       5,    27,    25,    29,    55,    65,    66,    55,    27,    55,
-      56,    59,    61,    63,    48,    28,    47,    46,    24,    27,
-      25,    25,    29,    41,    42,    49,    29,    55,    55,     5,
-       8,     9,    11,    24,    31,    47,    50,    51,    52,    53,
-      54,    55,    29,    26,    24,    55,    26,    24,    55,    24,
-      55,    27,    27,    50,    50,    24,     7,    50,    24
+       0,     6,    12,    39,    40,    41,    43,    51,     5,    52,
+      53,     0,    40,     1,     5,    24,    42,    44,    45,    30,
+      26,    24,     1,    25,    28,    30,    48,    43,    54,    55,
+       1,    27,    43,    46,    47,     5,    42,    42,     1,     3,
+      54,     1,    44,    56,    57,    31,    54,    27,    44,    27,
+      25,    29,    29,     3,     4,     5,     8,     9,    11,    26,
+      35,    48,    49,    50,    58,    24,    23,     1,    24,    25,
+      46,    26,    26,    58,    26,    58,    58,    31,    49,     1,
+      13,    14,    15,    16,    23,    24,    28,    30,    32,    33,
+      34,    36,    58,    56,     1,    27,    58,    59,    58,    24,
+      58,    27,    58,    58,    58,    58,    58,    58,     1,    58,
+      58,     5,    58,    27,    25,    27,    27,    27,     1,    29,
+      31,    59,    50,    50,    29,     7,    50
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    37,    38,    39,    39,    40,    40,    41,    41,    41,
-      41,    42,    42,    42,    42,    43,    43,    44,    44,    45,
-      45,    46,    46,    47,    48,    48,    49,    49,    50,    50,
-      50,    50,    50,    51,    51,    52,    52,    53,    54,    54,
-      55,    55,    56,    56,    56,    57,    57,    58,    58,    58,
-      58,    58,    58,    59,    59,    60,    60,    61,    61,    62,
-      62,    63,    63,    63,    63,    64,    65,    65,    66,    66,
-      50,    50,    50,    50,    50
+       0,    38,    39,    40,    40,    41,    41,    41,    41,    42,
+      42,    42,    43,    43,    44,    44,    44,    45,    45,    45,
+      46,    46,    47,    48,    49,    49,    50,    50,    50,    50,
+      50,    50,    51,    51,    52,    52,    53,    54,    54,    55,
+      55,    55,    56,    56,    57,    57,    58,    58,    58,    58,
+      58,    58,    58,    58,    58,    58,    58,    58,    58,    58,
+      58,    58,    58,    58,    58,    58,    59,    59
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
-       0,     2,     1,     2,     1,     1,     1,     3,     4,     5,
-       6,     1,     1,     1,     2,     5,     6,     1,     1,     3,
-       1,     2,     4,     4,     2,     0,     2,     0,     1,     1,
-       1,     1,     1,     2,     1,     9,     6,     5,     2,     3,
-       3,     1,     1,     4,     6,     3,     1,     1,     1,     1,
-       1,     1,     1,     3,     1,     1,     1,     3,     1,     1,
-       1,     3,     1,     1,     1,     4,     1,     0,     3,     1,
-       1,     1,     1,     1,     1
+       0,     2,     1,     0,     2,     3,     2,     3,     2,     1,
+       3,     3,     1,     1,     1,     4,     4,     4,     3,     4,
+       3,     1,     2,     4,     0,     2,     2,     1,     3,     7,
+       5,     2,     5,     2,     0,     1,     1,     0,     2,     3,
+       3,     3,     1,     3,     1,     3,     1,     3,     1,     1,
+       3,     3,     3,     3,     3,     3,     3,     3,     2,     3,
+       4,     4,     3,     5,     4,     4,     3,     1
 };
 
 
@@ -795,6 +821,32 @@ enum { YYENOMEM = -2 };
    Use YYerror or YYUNDEF. */
 #define YYERRCODE YYUNDEF
 
+/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
+   If N is 0, then set CURRENT to the empty location which ends
+   the previous symbol: RHS[0] (always defined).  */
+
+#ifndef YYLLOC_DEFAULT
+# define YYLLOC_DEFAULT(Current, Rhs, N)                                \
+    do                                                                  \
+      if (N)                                                            \
+        {                                                               \
+          (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;        \
+          (Current).first_column = YYRHSLOC (Rhs, 1).first_column;      \
+          (Current).last_line    = YYRHSLOC (Rhs, N).last_line;         \
+          (Current).last_column  = YYRHSLOC (Rhs, N).last_column;       \
+        }                                                               \
+      else                                                              \
+        {                                                               \
+          (Current).first_line   = (Current).last_line   =              \
+            YYRHSLOC (Rhs, 0).last_line;                                \
+          (Current).first_column = (Current).last_column =              \
+            YYRHSLOC (Rhs, 0).last_column;                              \
+        }                                                               \
+    while (0)
+#endif
+
+#define YYRHSLOC(Rhs, K) ((Rhs)[K])
+
 
 /* Enable debugging if requested.  */
 #if YYDEBUG
@@ -811,6 +863,63 @@ do {                                            \
 } while (0)
 
 
+/* YYLOCATION_PRINT -- Print the location on the stream.
+   This macro was not mandated originally: define only if we know
+   we won't break user code: when these are the locations we know.  */
+
+# ifndef YYLOCATION_PRINT
+
+#  if defined YY_LOCATION_PRINT
+
+   /* Temporary convenience wrapper in case some people defined the
+      undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YYLOCATION_PRINT(File, Loc)  YY_LOCATION_PRINT(File, *(Loc))
+
+#  elif defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+
+/* Print *YYLOCP on YYO.  Private, do not rely on its existence. */
+
+YY_ATTRIBUTE_UNUSED
+static int
+yy_location_print_ (FILE *yyo, YYLTYPE const * const yylocp)
+{
+  int res = 0;
+  int end_col = 0 != yylocp->last_column ? yylocp->last_column - 1 : 0;
+  if (0 <= yylocp->first_line)
+    {
+      res += YYFPRINTF (yyo, "%d", yylocp->first_line);
+      if (0 <= yylocp->first_column)
+        res += YYFPRINTF (yyo, ".%d", yylocp->first_column);
+    }
+  if (0 <= yylocp->last_line)
+    {
+      if (yylocp->first_line < yylocp->last_line)
+        {
+          res += YYFPRINTF (yyo, "-%d", yylocp->last_line);
+          if (0 <= end_col)
+            res += YYFPRINTF (yyo, ".%d", end_col);
+        }
+      else if (0 <= end_col && yylocp->first_column < end_col)
+        res += YYFPRINTF (yyo, "-%d", end_col);
+    }
+  return res;
+}
+
+#   define YYLOCATION_PRINT  yy_location_print_
+
+    /* Temporary convenience wrapper in case some people defined the
+       undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YY_LOCATION_PRINT(File, Loc)  YYLOCATION_PRINT(File, &(Loc))
+
+#  else
+
+#   define YYLOCATION_PRINT(File, Loc) ((void) 0)
+    /* Temporary convenience wrapper in case some people defined the
+       undocumented and private YY_LOCATION_PRINT macros.  */
+#   define YY_LOCATION_PRINT  YYLOCATION_PRINT
+
+#  endif
+# endif /* !defined YYLOCATION_PRINT */
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -819,7 +928,7 @@ do {                                                                      \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Kind, Value); \
+                  Kind, Value, Location); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
@@ -831,10 +940,11 @@ do {                                                                      \
 
 static void
 yy_symbol_value_print (FILE *yyo,
-                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp)
 {
   FILE *yyoutput = yyo;
   YY_USE (yyoutput);
+  YY_USE (yylocationp);
   if (!yyvaluep)
     return;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
@@ -849,12 +959,14 @@ yy_symbol_value_print (FILE *yyo,
 
 static void
 yy_symbol_print (FILE *yyo,
-                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep, YYLTYPE const * const yylocationp)
 {
   YYFPRINTF (yyo, "%s %s (",
              yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  yy_symbol_value_print (yyo, yykind, yyvaluep);
+  YYLOCATION_PRINT (yyo, yylocationp);
+  YYFPRINTF (yyo, ": ");
+  yy_symbol_value_print (yyo, yykind, yyvaluep, yylocationp);
   YYFPRINTF (yyo, ")");
 }
 
@@ -887,7 +999,7 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp, YYLTYPE *yylsp,
                  int yyrule)
 {
   int yylno = yyrline[yyrule];
@@ -901,7 +1013,8 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
                        YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
-                       &yyvsp[(yyi + 1) - (yynrhs)]);
+                       &yyvsp[(yyi + 1) - (yynrhs)],
+                       &(yylsp[(yyi + 1) - (yynrhs)]));
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -909,7 +1022,7 @@ yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
 # define YY_REDUCE_PRINT(Rule)          \
 do {                                    \
   if (yydebug)                          \
-    yy_reduce_print (yyssp, yyvsp, Rule); \
+    yy_reduce_print (yyssp, yyvsp, yylsp, Rule); \
 } while (0)
 
 /* Nonzero means print parse trace.  It is left uninitialized so that
@@ -950,9 +1063,10 @@ int yydebug;
 
 static void
 yydestruct (const char *yymsg,
-            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep, YYLTYPE *yylocationp)
 {
   YY_USE (yyvaluep);
+  YY_USE (yylocationp);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
@@ -968,6 +1082,12 @@ int yychar;
 
 /* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
+/* Location data for the lookahead symbol.  */
+YYLTYPE yylloc
+# if defined YYLTYPE_IS_TRIVIAL && YYLTYPE_IS_TRIVIAL
+  = { 1, 1, 1, 1 }
+# endif
+;
 /* Number of syntax errors so far.  */
 int yynerrs;
 
@@ -1001,6 +1121,11 @@ yyparse (void)
     YYSTYPE *yyvs = yyvsa;
     YYSTYPE *yyvsp = yyvs;
 
+    /* The location stack: array, bottom, top.  */
+    YYLTYPE yylsa[YYINITDEPTH];
+    YYLTYPE *yyls = yylsa;
+    YYLTYPE *yylsp = yyls;
+
   int yyn;
   /* The return value of yyparse.  */
   int yyresult;
@@ -1009,10 +1134,14 @@ yyparse (void)
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
+  YYLTYPE yyloc;
+
+  /* The locations where the error started and ended.  */
+  YYLTYPE yyerror_range[3];
 
 
 
-#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
+#define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N), yylsp -= (N))
 
   /* The number of symbols on the RHS of the reduced rule.
      Keep to zero when no symbol should be popped.  */
@@ -1022,6 +1151,7 @@ yyparse (void)
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
 
+  yylsp[0] = yylloc;
   goto yysetstate;
 
 
@@ -1060,6 +1190,7 @@ yysetstate:
            memory.  */
         yy_state_t *yyss1 = yyss;
         YYSTYPE *yyvs1 = yyvs;
+        YYLTYPE *yyls1 = yyls;
 
         /* Each stack pointer address is followed by the size of the
            data in use in that stack, in bytes.  This used to be a
@@ -1068,9 +1199,11 @@ yysetstate:
         yyoverflow (YY_("memory exhausted"),
                     &yyss1, yysize * YYSIZEOF (*yyssp),
                     &yyvs1, yysize * YYSIZEOF (*yyvsp),
+                    &yyls1, yysize * YYSIZEOF (*yylsp),
                     &yystacksize);
         yyss = yyss1;
         yyvs = yyvs1;
+        yyls = yyls1;
       }
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
@@ -1089,6 +1222,7 @@ yysetstate:
           YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
+        YYSTACK_RELOCATE (yyls_alloc, yyls);
 #  undef YYSTACK_RELOCATE
         if (yyss1 != yyssa)
           YYSTACK_FREE (yyss1);
@@ -1097,6 +1231,7 @@ yysetstate:
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
+      yylsp = yyls + yysize - 1;
 
       YY_IGNORE_USELESS_CAST_BEGIN
       YYDPRINTF ((stderr, "Stack size increased to %ld\n",
@@ -1150,6 +1285,7 @@ yybackup:
          loop in error recovery. */
       yychar = YYUNDEF;
       yytoken = YYSYMBOL_YYerror;
+      yyerror_range[1] = yylloc;
       goto yyerrlab1;
     }
   else
@@ -1183,6 +1319,7 @@ yybackup:
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
+  *++yylsp = yylloc;
 
   /* Discard the shifted token.  */
   yychar = YYEMPTY;
@@ -1216,504 +1353,616 @@ yyreduce:
      GCC warning that YYVAL may be used uninitialized.  */
   yyval = yyvsp[1-yylen];
 
-
+  /* Default location. */
+  YYLLOC_DEFAULT (yyloc, (yylsp - yylen), yylen);
+  yyerror_range[1] = yyloc;
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 2: /* program: declaration_list  */
-#line 71 "cminus.y"
-                       { 
-        (yyval.node) = (yyvsp[0].node); 
-        root = (yyval.node);  // 将解析完成的AST赋值给root
-        printf("Parsing completed successfully.\n");
+  case 2: /* program: ExtDefList  */
+#line 69 "cminus.y"
+                 { 
+        if ((yyvsp[0].node) == NULL) {
+            (yyval.node) = create_node("Program", 0, (yylsp[0]).first_line);
+        } else if ((yyvsp[0].node)->child_count == 1) {
+            (yyval.node) = create_node("Program", 1, (yyvsp[0].node)->linenumber, (yyvsp[0].node));
+        } else {
+            (yyval.node) = create_node("Program", 1, (yylsp[0]).first_line, (yyvsp[0].node));
+        }
+        root = (yyval.node);
     }
-#line 1231 "cminus.tab.c"
+#line 1375 "cminus.tab.c"
     break;
 
-  case 3: /* declaration_list: declaration_list declaration  */
-#line 79 "cminus.y"
-                                   { 
-        (yyval.node) = create_node("declaration_list", 2, (yyvsp[-1].node), (yyvsp[0].node)); 
-    }
-#line 1239 "cminus.tab.c"
-    break;
-
-  case 4: /* declaration_list: declaration  */
+  case 3: /* ExtDefList: %empty  */
 #line 82 "cminus.y"
                   { 
-        (yyval.node) = create_node("declaration_list", 1, (yyvsp[0].node)); 
+        (yyval.node) = NULL;  // 空规则直接返回 NULL，不创建节点
     }
-#line 1247 "cminus.tab.c"
+#line 1383 "cminus.tab.c"
     break;
 
-  case 5: /* declaration: var_declaration  */
-#line 88 "cminus.y"
-                      { (yyval.node) = (yyvsp[0].node); }
-#line 1253 "cminus.tab.c"
-    break;
-
-  case 6: /* declaration: fun_declaration  */
-#line 89 "cminus.y"
-                      { (yyval.node) = (yyvsp[0].node); }
-#line 1259 "cminus.tab.c"
-    break;
-
-  case 7: /* var_declaration: type_specifier ID SEMI  */
-#line 93 "cminus.y"
-                             {
-        (yyval.node) = create_node("var_declaration", 2, 
-            create_str_leaf("type_specifier", (yyvsp[-2].string)),
-            create_str_leaf("ID", (yyvsp[-1].string)));
+  case 4: /* ExtDefList: ExtDef ExtDefList  */
+#line 85 "cminus.y"
+                        { 
+        if ((yyvsp[0].node) == NULL) {
+            (yyval.node) = create_node("ExtDefList", 1, (yylsp[-1]).first_line, (yyvsp[-1].node));
+        } else {
+            (yyval.node) = create_node("ExtDefList", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), (yyvsp[0].node)); 
+            (yyval.node) -> val.int_value = 2;
+        }
     }
-#line 1269 "cminus.tab.c"
+#line 1396 "cminus.tab.c"
     break;
 
-  case 8: /* var_declaration: STRUCT ID ID SEMI  */
-#line 98 "cminus.y"
-                        {
-        (yyval.node) = create_node("struct_var_declaration", 3,
-            create_str_leaf("STRUCT", "struct"),
-            create_str_leaf("TYPE_ID", (yyvsp[-2].string)),
-            create_str_leaf("ID", (yyvsp[-1].string)));
-    }
-#line 1280 "cminus.tab.c"
-    break;
-
-  case 9: /* var_declaration: type_specifier ID ASSIGN expression SEMI  */
-#line 104 "cminus.y"
-                                               {
-        (yyval.node) = create_node("init_declaration", 3,
-            create_str_leaf("type_specifier", (yyvsp[-4].string)),
-            create_str_leaf("ID", (yyvsp[-3].string)),
-            (yyvsp[-1].node));
-    }
-#line 1291 "cminus.tab.c"
-    break;
-
-  case 10: /* var_declaration: type_specifier ID LBRACKET INT RBRACKET SEMI  */
-#line 110 "cminus.y"
-                                                   {
-        (yyval.node) = create_node("array_declaration", 3,
-            create_str_leaf("type_specifier", (yyvsp[-5].string)),
-            create_str_leaf("ID", (yyvsp[-4].string)),
-            create_int_leaf("SIZE", (yyvsp[-2].int_number)));
-    }
-#line 1302 "cminus.tab.c"
-    break;
-
-  case 11: /* type_specifier: INT  */
-#line 119 "cminus.y"
-          { (yyval.string) = "int"; }
-#line 1308 "cminus.tab.c"
-    break;
-
-  case 12: /* type_specifier: FLOAT  */
-#line 120 "cminus.y"
-            { (yyval.string) = "float"; }
-#line 1314 "cminus.tab.c"
-    break;
-
-  case 13: /* type_specifier: VOID  */
-#line 121 "cminus.y"
-           { (yyval.string) = "void"; }
-#line 1320 "cminus.tab.c"
-    break;
-
-  case 14: /* type_specifier: STRUCT ID  */
-#line 122 "cminus.y"
-                {
-        char* type_name = (char*)malloc(strlen((yyvsp[0].string)) + 8);
-        sprintf(type_name, "struct %s", (yyvsp[0].string));
-        (yyval.string) = type_name;
-    }
-#line 1330 "cminus.tab.c"
-    break;
-
-  case 15: /* fun_declaration: type_specifier ID LPAREN RPAREN compound_stmt  */
-#line 130 "cminus.y"
-                                                    {
-        (yyval.node) = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", (yyvsp[-4].string)),
-            create_str_leaf("ID", (yyvsp[-3].string)),
-            create_str_leaf("params", "void"),
-            (yyvsp[0].node));
-    }
-#line 1342 "cminus.tab.c"
-    break;
-
-  case 16: /* fun_declaration: type_specifier ID LPAREN params RPAREN compound_stmt  */
-#line 137 "cminus.y"
-                                                           {
-        (yyval.node) = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", (yyvsp[-5].string)),
-            create_str_leaf("ID", (yyvsp[-4].string)),
-            (yyvsp[-2].node), (yyvsp[0].node));
-    }
-#line 1353 "cminus.tab.c"
-    break;
-
-  case 17: /* params: param_list  */
-#line 299 "cminus.y"
-                 { (yyval.node) = (yyvsp[0].node); }
-#line 1359 "cminus.tab.c"
-    break;
-
-  case 18: /* params: VOID  */
-#line 300 "cminus.y"
-           { (yyval.node) = create_str_leaf("void_params", "void"); }
-#line 1365 "cminus.tab.c"
-    break;
-
-  case 19: /* param_list: param_list COMMA param  */
-#line 304 "cminus.y"
-                             {
-        (yyval.node) = create_node("param_list", 2, (yyvsp[-2].node), (yyvsp[0].node));
-    }
-#line 1373 "cminus.tab.c"
-    break;
-
-  case 20: /* param_list: param  */
-#line 307 "cminus.y"
-            { (yyval.node) = create_node("param_list", 1, (yyvsp[0].node)); }
-#line 1379 "cminus.tab.c"
-    break;
-
-  case 21: /* param: type_specifier ID  */
-#line 311 "cminus.y"
-                        {
-        (yyval.node) = create_node("param", 2, 
-            create_str_leaf("type_specifier", (yyvsp[-1].string)),
-            create_str_leaf("ID", (yyvsp[0].string)));
-    }
-#line 1389 "cminus.tab.c"
-    break;
-
-  case 22: /* param: type_specifier ID LBRACKET RBRACKET  */
-#line 316 "cminus.y"
-                                          {
-        (yyval.node) = create_node("param_array", 2, 
-            create_str_leaf("type_specifier", (yyvsp[-3].string)),
-            create_str_leaf("ID", (yyvsp[-2].string)));
-    }
-#line 1399 "cminus.tab.c"
-    break;
-
-  case 23: /* compound_stmt: LBRACE local_declarations statement_list RBRACE  */
-#line 324 "cminus.y"
-                                                      {
-        (yyval.node) = create_node("compound_stmt", 2, (yyvsp[-2].node), (yyvsp[-1].node));
-    }
-#line 1407 "cminus.tab.c"
-    break;
-
-  case 24: /* local_declarations: local_declarations var_declaration  */
-#line 330 "cminus.y"
-                                         {
-        (yyval.node) = create_node("local_declarations", 2, (yyvsp[-1].node), (yyvsp[0].node));
-    }
-#line 1415 "cminus.tab.c"
-    break;
-
-  case 25: /* local_declarations: %empty  */
-#line 333 "cminus.y"
-                  { (yyval.node) = NULL; }
-#line 1421 "cminus.tab.c"
-    break;
-
-  case 26: /* statement_list: statement_list statement  */
-#line 337 "cminus.y"
+  case 5: /* ExtDef: Specifier ExtDecList SEMI  */
+#line 96 "cminus.y"
                                {
-        (yyval.node) = create_node("statement_list", 2, (yyvsp[-1].node), (yyvsp[0].node));
+        ast_node* semi_node = create_node("SEMI", 0, (yylsp[0]).first_line);
+        (yyval.node)=create_node("ExtDef", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[-1].node), semi_node);
+    
     }
-#line 1429 "cminus.tab.c"
+#line 1406 "cminus.tab.c"
     break;
 
-  case 27: /* statement_list: %empty  */
-#line 340 "cminus.y"
-                  { (yyval.node) = NULL; }
-#line 1435 "cminus.tab.c"
-    break;
-
-  case 28: /* statement: expression_stmt  */
-#line 344 "cminus.y"
-                      { (yyval.node) = (yyvsp[0].node); }
-#line 1441 "cminus.tab.c"
-    break;
-
-  case 29: /* statement: compound_stmt  */
-#line 345 "cminus.y"
-                    { (yyval.node) = (yyvsp[0].node); }
-#line 1447 "cminus.tab.c"
-    break;
-
-  case 30: /* statement: selection_stmt  */
-#line 346 "cminus.y"
-                     { (yyval.node) = (yyvsp[0].node); }
-#line 1453 "cminus.tab.c"
-    break;
-
-  case 31: /* statement: iteration_stmt  */
-#line 347 "cminus.y"
-                     { (yyval.node) = (yyvsp[0].node); }
-#line 1459 "cminus.tab.c"
-    break;
-
-  case 32: /* statement: return_stmt  */
-#line 348 "cminus.y"
-                  { (yyval.node) = (yyvsp[0].node); }
-#line 1465 "cminus.tab.c"
-    break;
-
-  case 33: /* expression_stmt: expression SEMI  */
-#line 352 "cminus.y"
-                      { (yyval.node) = (yyvsp[-1].node); }
-#line 1471 "cminus.tab.c"
-    break;
-
-  case 34: /* expression_stmt: SEMI  */
-#line 353 "cminus.y"
-           { (yyval.node) = NULL; }
-#line 1477 "cminus.tab.c"
-    break;
-
-  case 35: /* selection_stmt: IF LPAREN expression RPAREN statement SEMI ELSE statement SEMI  */
-#line 357 "cminus.y"
-                                                                     {
-        (yyval.node) = create_node("if_else_stmt", 3, (yyvsp[-6].node), (yyvsp[-4].node), (yyvsp[-1].node));
+  case 6: /* ExtDef: Specifier SEMI  */
+#line 101 "cminus.y"
+                    {
+        ast_node* semi_node = create_node("SEMI", 0, (yylsp[0]).first_line);
+        (yyval.node)=create_node("ExtDef", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), semi_node);
+    
     }
-#line 1485 "cminus.tab.c"
+#line 1416 "cminus.tab.c"
     break;
 
-  case 36: /* selection_stmt: IF LPAREN expression RPAREN statement SEMI  */
-#line 360 "cminus.y"
-                                                 {
-        (yyval.node) = create_node("if_stmt", 2, (yyvsp[-3].node), (yyvsp[-1].node));
+  case 7: /* ExtDef: Specifier FunDec CompSt  */
+#line 106 "cminus.y"
+                             {
+        (yyval.node)=create_node("ExtDef", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1493 "cminus.tab.c"
+#line 1424 "cminus.tab.c"
     break;
 
-  case 37: /* iteration_stmt: WHILE LPAREN expression RPAREN statement  */
-#line 367 "cminus.y"
-                                               {
-        (yyval.node) = create_node("while_stmt", 2, (yyvsp[-2].node), (yyvsp[0].node));
+  case 8: /* ExtDef: Specifier error  */
+#line 109 "cminus.y"
+                      {
+        printError('B', "Missing \";\""); // 打印错误消息
     }
-#line 1501 "cminus.tab.c"
+#line 1432 "cminus.tab.c"
     break;
 
-  case 38: /* return_stmt: RETURN SEMI  */
-#line 373 "cminus.y"
-                  { (yyval.node) = create_str_leaf("return", "return"); }
-#line 1507 "cminus.tab.c"
-    break;
-
-  case 39: /* return_stmt: RETURN expression SEMI  */
-#line 374 "cminus.y"
-                             { (yyval.node) = create_node("return_expr", 1, (yyvsp[-1].node)); }
-#line 1513 "cminus.tab.c"
-    break;
-
-  case 40: /* expression: var ASSIGN expression  */
-#line 378 "cminus.y"
-                            {
-        (yyval.node) = create_node("assign", 2, (yyvsp[-2].node), (yyvsp[0].node));
+  case 9: /* ExtDecList: VarDec  */
+#line 114 "cminus.y"
+            {
+        (yyval.node)=create_node("ExtDecList", 1, (yylsp[0]).first_line, (yyvsp[0].node));
     }
-#line 1521 "cminus.tab.c"
+#line 1440 "cminus.tab.c"
     break;
 
-  case 41: /* expression: simple_expression  */
-#line 381 "cminus.y"
-                        { (yyval.node) = (yyvsp[0].node); }
-#line 1527 "cminus.tab.c"
+  case 10: /* ExtDecList: VarDec COMMA ExtDecList  */
+#line 117 "cminus.y"
+                             {
+        (yyval.node)=create_node("ExtDecList", 2, (yylsp[-2]).first_line, (yyvsp[-2].node),  (yyvsp[0].node));
+
+    }
+#line 1449 "cminus.tab.c"
     break;
 
-  case 42: /* var: ID  */
-#line 386 "cminus.y"
+  case 11: /* ExtDecList: VarDec error ExtDecList  */
+#line 121 "cminus.y"
+                             {
+        printError('B', "text"); // 打印错误消息
+    }
+#line 1457 "cminus.tab.c"
+    break;
+
+  case 12: /* Specifier: TYPE  */
+#line 126 "cminus.y"
+           { 
+        ast_node* type_node = create_node("TYPE", 0, (yylsp[0]).first_line);
+        type_node->val.str_value = strdup((yyvsp[0].string));  // 保存类型字符串
+        // 创建Specifier节点
+        (yyval.node) = create_node("Specifier", 1, (yylsp[0]).first_line, type_node);
+    }
+#line 1468 "cminus.tab.c"
+    break;
+
+  case 13: /* Specifier: StructSpecifier  */
+#line 132 "cminus.y"
+                      { 
+        (yyval.node) = create_node("Specifier", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
+    }
+#line 1476 "cminus.tab.c"
+    break;
+
+  case 14: /* VarDec: ID  */
+#line 140 "cminus.y"
          { 
-        (yyval.node) = create_str_leaf("var", (yyvsp[0].string)); 
+        ast_node* id_node = create_node("ID", 0, (yylsp[0]).first_line);
+        id_node->val.str_value = strdup((yyvsp[0].string));  // 保存变量名
+        (yyval.node) = create_node("VarDec", 1, (yylsp[0]).first_line, id_node); 
     }
-#line 1535 "cminus.tab.c"
+#line 1486 "cminus.tab.c"
     break;
 
-  case 43: /* var: ID LBRACKET expression RBRACKET  */
-#line 389 "cminus.y"
-                                      { 
-        (yyval.node) = create_node("array_access", 2, create_str_leaf("ID", (yyvsp[-3].string)), (yyvsp[-1].node)); 
+  case 15: /* VarDec: VarDec LBRACKET INT RBRACKET  */
+#line 145 "cminus.y"
+                                   {
+        ast_node* lb_node = create_node("LB", 0, (yylsp[-2]).first_line);
+        ast_node* int_node = create_node("INT", 0, (yylsp[-1]).first_line);
+        int_node->val.int_value = (yyvsp[-1].int_number);
+        ast_node* rb_node = create_node("RB", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("VarDec", 4, (yylsp[-3]).first_line, (yyvsp[-3].node), lb_node, int_node, rb_node); 
     }
-#line 1543 "cminus.tab.c"
+#line 1498 "cminus.tab.c"
     break;
 
-  case 44: /* var: ID LBRACKET expression COMMA expression RBRACKET  */
-#line 392 "cminus.y"
-                                                       {
-        fprintf(stderr, "Error type B at Line %d: Missing \"]\".\n", yylineno);
-        YYERROR;
-    }
-#line 1552 "cminus.tab.c"
-    break;
-
-  case 45: /* simple_expression: additive_expression relop additive_expression  */
-#line 399 "cminus.y"
-                                                    {
-        (yyval.node) = create_node("rel_expr", 3, (yyvsp[-2].node), create_str_leaf("relop", (yyvsp[-1].string)), (yyvsp[0].node));
-    }
-#line 1560 "cminus.tab.c"
-    break;
-
-  case 46: /* simple_expression: additive_expression  */
-#line 402 "cminus.y"
-                          { (yyval.node) = (yyvsp[0].node); }
-#line 1566 "cminus.tab.c"
-    break;
-
-  case 47: /* relop: LTE  */
-#line 406 "cminus.y"
-          { (yyval.string) = "<="; }
-#line 1572 "cminus.tab.c"
-    break;
-
-  case 48: /* relop: LT  */
-#line 407 "cminus.y"
-         { (yyval.string) = "<"; }
-#line 1578 "cminus.tab.c"
-    break;
-
-  case 49: /* relop: GT  */
-#line 408 "cminus.y"
-         { (yyval.string) = ">"; }
-#line 1584 "cminus.tab.c"
-    break;
-
-  case 50: /* relop: GTE  */
-#line 409 "cminus.y"
-          { (yyval.string) = ">="; }
-#line 1590 "cminus.tab.c"
-    break;
-
-  case 51: /* relop: EQ  */
-#line 410 "cminus.y"
-         { (yyval.string) = "=="; }
-#line 1596 "cminus.tab.c"
-    break;
-
-  case 52: /* relop: NEQ  */
-#line 411 "cminus.y"
-          { (yyval.string) = "!="; }
-#line 1602 "cminus.tab.c"
-    break;
-
-  case 53: /* additive_expression: additive_expression addop term  */
-#line 415 "cminus.y"
+  case 16: /* VarDec: VarDec LBRACKET error RBRACKET  */
+#line 152 "cminus.y"
                                      {
-        (yyval.node) = create_node("add_expr", 3, (yyvsp[-2].node), create_str_leaf("addop", (yyvsp[-1].string)), (yyvsp[0].node));
+        char msg[32]; // 定义错误信息缓冲区
+        sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
+        printError('B', msg); // 打印错误消息
     }
-#line 1610 "cminus.tab.c"
+#line 1508 "cminus.tab.c"
     break;
 
-  case 54: /* additive_expression: term  */
-#line 418 "cminus.y"
-           { (yyval.node) = (yyvsp[0].node); }
-#line 1616 "cminus.tab.c"
+  case 17: /* FunDec: ID LPAREN VarList RPAREN  */
+#line 159 "cminus.y"
+                             {
+        ast_node* id_node = create_node("ID", 0, (yylsp[-3]).first_line);
+        id_node->val.str_value = strdup((yyvsp[-3].string));  // 保存函数名
+        ast_node* lp_node = create_node("LP", 0, (yylsp[-2]).first_line);
+        ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("FunDec", 4, (yylsp[-3]).first_line, id_node, lp_node, (yyvsp[-1].node), rp_node); 
+    }
+#line 1520 "cminus.tab.c"
     break;
 
-  case 55: /* addop: PLUS  */
-#line 422 "cminus.y"
-           { (yyval.string) = "+"; }
-#line 1622 "cminus.tab.c"
+  case 18: /* FunDec: ID LPAREN RPAREN  */
+#line 166 "cminus.y"
+                      {
+        ast_node* id_node = create_node("ID", 0, (yylsp[-2]).first_line);
+        id_node->val.str_value = strdup((yyvsp[-2].string));  // 保存函数名
+        ast_node* lp_node = create_node("LP", 0, (yylsp[-1]).first_line);
+        ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("FunDec", 3, (yylsp[-2]).first_line, id_node, lp_node, rp_node); 
+    
+    }
+#line 1533 "cminus.tab.c"
     break;
 
-  case 56: /* addop: MINUS  */
-#line 423 "cminus.y"
-            { (yyval.string) = "-"; }
-#line 1628 "cminus.tab.c"
+  case 19: /* FunDec: ID LPAREN error RPAREN  */
+#line 174 "cminus.y"
+                             {
+        printError('B', "Syntax error between ()"); // 打印错误消息
+    }
+#line 1541 "cminus.tab.c"
     break;
 
-  case 57: /* term: term mulop factor  */
-#line 427 "cminus.y"
+  case 20: /* VarList: ParamDec COMMA VarList  */
+#line 180 "cminus.y"
+                             {
+        (yyval.node) = create_node("VarList", 2, (yylsp[-2]).first_line, (yyvsp[-2].node),  (yyvsp[0].node)); 
+    }
+#line 1549 "cminus.tab.c"
+    break;
+
+  case 21: /* VarList: ParamDec  */
+#line 183 "cminus.y"
+               {
+        (yyval.node) = create_node("VarList", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
+    }
+#line 1557 "cminus.tab.c"
+    break;
+
+  case 22: /* ParamDec: Specifier VarDec  */
+#line 188 "cminus.y"
+                       {
+        (yyval.node) = create_node("ParamDec", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), (yyvsp[0].node)); 
+    }
+#line 1565 "cminus.tab.c"
+    break;
+
+  case 23: /* CompSt: LBRACE DefList StmtList RBRACE  */
+#line 193 "cminus.y"
+                                   {
+        ast_node* lc_node = create_node("LC", 0, (yylsp[-3]).first_line);
+        ast_node* rc_node = create_node("RC", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("CompSt", 4, (yylsp[-3]).first_line, lc_node, (yyvsp[-2].node), (yyvsp[-1].node), rc_node); 
+    }
+#line 1575 "cminus.tab.c"
+    break;
+
+  case 24: /* StmtList: %empty  */
+#line 201 "cminus.y"
+      {
+        (yyval.node) = NULL;
+    }
+#line 1583 "cminus.tab.c"
+    break;
+
+  case 25: /* StmtList: Stmt StmtList  */
+#line 204 "cminus.y"
+                   {
+        (yyval.node) = create_node("StmtList", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), (yyvsp[0].node)); 
+    }
+#line 1591 "cminus.tab.c"
+    break;
+
+  case 26: /* Stmt: Exp SEMI  */
+#line 211 "cminus.y"
+               {
+        ast_node* semi_node = create_node("SEMI", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("Stmt", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), semi_node); 
+    
+    }
+#line 1601 "cminus.tab.c"
+    break;
+
+  case 27: /* Stmt: CompSt  */
+#line 216 "cminus.y"
+             {
+        (yyval.node) = create_node("Stmt", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
+    }
+#line 1609 "cminus.tab.c"
+    break;
+
+  case 28: /* Stmt: RETURN Exp SEMI  */
+#line 219 "cminus.y"
+                      {
+        (yyval.node) = create_node("Stmt", 1, (yylsp[-2]).first_line, (yyvsp[-1].node)); 
+    }
+#line 1617 "cminus.tab.c"
+    break;
+
+  case 29: /* Stmt: IF LPAREN Exp RPAREN Stmt ELSE Stmt  */
+#line 222 "cminus.y"
+                                          {
+        (yyval.node) = create_node("Stmt", 3, (yylsp[-6]).first_line,  (yyvsp[-4].node), (yyvsp[-2].node), (yyvsp[0].node)); 
+    }
+#line 1625 "cminus.tab.c"
+    break;
+
+  case 30: /* Stmt: WHILE LPAREN Exp RPAREN Stmt  */
+#line 225 "cminus.y"
+                                   {
+        (yyval.node) = create_node("Stmt", 2, (yylsp[-4]).first_line, (yyvsp[-2].node), (yyvsp[0].node)); 
+    }
+#line 1633 "cminus.tab.c"
+    break;
+
+  case 31: /* Stmt: Exp error  */
+#line 228 "cminus.y"
+                {
+        printError('B', "Missing \";\""); // 打印错误消息
+    }
+#line 1641 "cminus.tab.c"
+    break;
+
+  case 32: /* StructSpecifier: STRUCT OptTag LBRACE DefList RBRACE  */
+#line 233 "cminus.y"
+                                          {
+        (yyval.node) = create_node("StructSpecifier", 2, (yylsp[-4]).first_line, (yyvsp[-3].node), (yyvsp[-1].node)); 
+    }
+#line 1649 "cminus.tab.c"
+    break;
+
+  case 33: /* StructSpecifier: STRUCT Tag  */
+#line 236 "cminus.y"
+                 {
+        (yyval.node) = create_node("StructSpecifier", 1, (yylsp[-1]).first_line, (yyvsp[0].node)); 
+    }
+#line 1657 "cminus.tab.c"
+    break;
+
+  case 34: /* OptTag: %empty  */
+#line 243 "cminus.y"
+                  {
+        (yyval.node) = create_node("OptTag", 0, 0);
+        (yyval.node) -> val.int_value = 0; 
+
+    }
+#line 1667 "cminus.tab.c"
+    break;
+
+  case 35: /* OptTag: ID  */
+#line 248 "cminus.y"
+         {
+        (yyval.node) = create_node("OptTag", 0, (yylsp[0]).first_line); 
+
+    }
+#line 1676 "cminus.tab.c"
+    break;
+
+  case 36: /* Tag: ID  */
+#line 255 "cminus.y"
+         {
+        (yyval.node) = create_node("Tag", 0, (yylsp[0]).first_line); 
+
+    }
+#line 1685 "cminus.tab.c"
+    break;
+
+  case 37: /* DefList: %empty  */
+#line 262 "cminus.y"
+                  { 
+        (yyval.node) = NULL;
+
+    }
+#line 1694 "cminus.tab.c"
+    break;
+
+  case 38: /* DefList: Def DefList  */
+#line 266 "cminus.y"
+                  {
+        (yyval.node) = create_node("DefList", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), (yyvsp[0].node));
+    }
+#line 1702 "cminus.tab.c"
+    break;
+
+  case 39: /* Def: Specifier DecList SEMI  */
+#line 272 "cminus.y"
+                             {
+        (yyval.node) = create_node("Def", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[-1].node)); 
+
+    }
+#line 1711 "cminus.tab.c"
+    break;
+
+  case 40: /* Def: Specifier error SEMI  */
+#line 276 "cminus.y"
+                           {
+        char msg[32]; // 定义错误信息缓冲区
+        sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
+        printError('B', msg); // 打印错误消息
+    }
+#line 1721 "cminus.tab.c"
+    break;
+
+  case 41: /* Def: Specifier DecList error  */
+#line 281 "cminus.y"
+                              {
+        printError('B',"Missing \";\""); // 打印错误消息
+    }
+#line 1729 "cminus.tab.c"
+    break;
+
+  case 42: /* DecList: Dec  */
+#line 288 "cminus.y"
+          {
+        (yyval.node) = create_node("DecList", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
+    }
+#line 1737 "cminus.tab.c"
+    break;
+
+  case 43: /* DecList: Dec COMMA DecList  */
+#line 291 "cminus.y"
                         {
-        (yyval.node) = create_node("mul_expr", 3, (yyvsp[-2].node), create_str_leaf("mulop", (yyvsp[-1].string)), (yyvsp[0].node));
+        (yyval.node) = create_node("DecList", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node)); 
     }
-#line 1636 "cminus.tab.c"
+#line 1745 "cminus.tab.c"
     break;
 
-  case 58: /* term: factor  */
-#line 430 "cminus.y"
-             { (yyval.node) = (yyvsp[0].node); }
-#line 1642 "cminus.tab.c"
-    break;
-
-  case 59: /* mulop: TIMES  */
-#line 434 "cminus.y"
-            { (yyval.string) = "*"; }
-#line 1648 "cminus.tab.c"
-    break;
-
-  case 60: /* mulop: DIVIDE  */
-#line 435 "cminus.y"
-             { (yyval.string) = "/"; }
-#line 1654 "cminus.tab.c"
-    break;
-
-  case 61: /* factor: LPAREN expression RPAREN  */
-#line 439 "cminus.y"
-                               { (yyval.node) = (yyvsp[-1].node); }
-#line 1660 "cminus.tab.c"
-    break;
-
-  case 62: /* factor: var  */
-#line 440 "cminus.y"
-          { (yyval.node) = (yyvsp[0].node); }
-#line 1666 "cminus.tab.c"
-    break;
-
-  case 63: /* factor: call  */
-#line 441 "cminus.y"
-           { (yyval.node) = (yyvsp[0].node); }
-#line 1672 "cminus.tab.c"
-    break;
-
-  case 64: /* factor: INT  */
-#line 442 "cminus.y"
-          { (yyval.node) = create_int_leaf("INT", (yyvsp[0].int_number)); }
-#line 1678 "cminus.tab.c"
-    break;
-
-  case 65: /* call: ID LPAREN args RPAREN  */
-#line 446 "cminus.y"
-                            {
-        (yyval.node) = create_node("call", 2, 
-            create_str_leaf("ID", (yyvsp[-3].string)), (yyvsp[-1].node));
+  case 44: /* Dec: VarDec  */
+#line 296 "cminus.y"
+             {
+        (yyval.node) = create_node("Dec", 1, (yylsp[0]).first_line, (yyvsp[0].node)); // 将 VarDec 作为 Dec 的子节点
     }
-#line 1687 "cminus.tab.c"
+#line 1753 "cminus.tab.c"
     break;
 
-  case 66: /* args: arg_list  */
-#line 453 "cminus.y"
-               { (yyval.node) = (yyvsp[0].node); }
-#line 1693 "cminus.tab.c"
+  case 45: /* Dec: VarDec ASSIGN Exp  */
+#line 299 "cminus.y"
+                        {
+        ast_node* assign_node = create_node("ASSIGN", 0, (yylsp[-1]).first_line);
+        assign_node->val.str_value = "=";
+        (yyval.node) = create_node("Dec", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), assign_node, (yyvsp[0].node)); 
+    }
+#line 1763 "cminus.tab.c"
     break;
 
-  case 67: /* args: %empty  */
-#line 454 "cminus.y"
-                  { (yyval.node) = NULL; }
-#line 1699 "cminus.tab.c"
+  case 46: /* Exp: ID  */
+#line 309 "cminus.y"
+         { 
+        (yyval.node) = create_node("ID",0 , (yylsp[0]).first_line);
+        (yyval.node)->val.str_value = strdup((yyvsp[0].string));  // 保存ID的值
+    }
+#line 1772 "cminus.tab.c"
     break;
 
-  case 68: /* arg_list: arg_list COMMA expression  */
-#line 458 "cminus.y"
+  case 47: /* Exp: Exp DOT ID  */
+#line 313 "cminus.y"
+                 {
+        (yyval.node) = create_node("struct_access",1 , (yylsp[-2]).first_line, (yyvsp[-2].node));
+    }
+#line 1780 "cminus.tab.c"
+    break;
+
+  case 48: /* Exp: INT  */
+#line 316 "cminus.y"
+          { 
+        ast_node* int_node = create_node("INT", 0, (yylsp[0]).first_line);
+        int_node->val.int_value = (yyvsp[0].int_number);  // 保存整数值
+        (yyval.node) = create_node("Exp", 1, (yylsp[0]).first_line, int_node);
+    }
+#line 1790 "cminus.tab.c"
+    break;
+
+  case 49: /* Exp: FLOAT  */
+#line 321 "cminus.y"
+            {
+        ast_node* float_node = create_node("FLOAT", 0, (yylsp[0]).first_line);
+        float_node->val.float_value = (yyvsp[0].float_number);  // 保存整数值
+        (yyval.node) = create_node("Exp", 1, (yylsp[0]).first_line, float_node);
+    }
+#line 1800 "cminus.tab.c"
+    break;
+
+  case 50: /* Exp: Exp ASSIGN Exp  */
+#line 326 "cminus.y"
+                     {
+        ast_node* assign_node = create_node("ASSIGN", 0, (yylsp[-1]).first_line);
+        assign_node->val.str_value = "=";
+        ast_node* left_exp = create_node("Exp", 1, (yylsp[-2]).first_line, (yyvsp[-2].node));
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, left_exp, assign_node, (yyvsp[0].node));
+    }
+#line 1811 "cminus.tab.c"
+    break;
+
+  case 51: /* Exp: Exp PLUS Exp  */
+#line 332 "cminus.y"
+                   {
+        ast_node* plus_node = create_node("PLUS", 0, (yylsp[-1]).first_line);
+        ast_node* left_exp = create_node("Exp", 1, (yylsp[-2]).first_line, (yyvsp[-2].node));
+        ast_node* right_exp = create_node("Exp", 1, (yylsp[0]).first_line, (yyvsp[0].node));
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, left_exp, plus_node, right_exp);
+    }
+#line 1822 "cminus.tab.c"
+    break;
+
+  case 52: /* Exp: Exp MINUS Exp  */
+#line 338 "cminus.y"
+                    {
+        (yyval.node) = create_node("minus",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1830 "cminus.tab.c"
+    break;
+
+  case 53: /* Exp: Exp TIMES Exp  */
+#line 341 "cminus.y"
+                    {
+        (yyval.node) = create_node("mul",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1838 "cminus.tab.c"
+    break;
+
+  case 54: /* Exp: Exp DIVIDE Exp  */
+#line 344 "cminus.y"
+                     {
+        (yyval.node) = create_node("div",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1846 "cminus.tab.c"
+    break;
+
+  case 55: /* Exp: Exp RELOP Exp  */
+#line 347 "cminus.y"
+                    {
+        (yyval.node) = create_node("RELOP",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1854 "cminus.tab.c"
+    break;
+
+  case 56: /* Exp: Exp AND Exp  */
+#line 350 "cminus.y"
+                  {
+        (yyval.node) = create_node("AND",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1862 "cminus.tab.c"
+    break;
+
+  case 57: /* Exp: Exp OR Exp  */
+#line 353 "cminus.y"
+                 {
+        (yyval.node) = create_node("OR",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1870 "cminus.tab.c"
+    break;
+
+  case 58: /* Exp: NOT Exp  */
+#line 356 "cminus.y"
+             {
+        (yyval.node) = create_node("NOT",1 , (yylsp[-1]).first_line, (yyvsp[0].node));
+    }
+#line 1878 "cminus.tab.c"
+    break;
+
+  case 59: /* Exp: ID LPAREN RPAREN  */
+#line 359 "cminus.y"
+                       {
+        ast_node* id_node = create_node("ID", 0, (yylsp[-2]).first_line);
+        id_node->val.str_value = strdup((yyvsp[-2].string));
+        ast_node* lp_node = create_node("LP", 0, (yylsp[-1]).first_line);
+        ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("CALL", 3, (yylsp[-2]).first_line, id_node, lp_node, rp_node);
+    }
+#line 1890 "cminus.tab.c"
+    break;
+
+  case 60: /* Exp: ID LPAREN arg_list RPAREN  */
+#line 366 "cminus.y"
+                               {
+        ast_node* id_node = create_node("ID", 0, (yylsp[-3]).first_line);
+        id_node->val.str_value = strdup((yyvsp[-3].string));
+        ast_node* lp_node = create_node("LP", 0, (yylsp[-2]).first_line);
+        ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("CALL", 4, (yylsp[-3]).first_line, id_node, lp_node, (yyvsp[-1].node), rp_node);
+    }
+#line 1902 "cminus.tab.c"
+    break;
+
+  case 61: /* Exp: Exp LBRACKET Exp RBRACKET  */
+#line 373 "cminus.y"
                                 {
-        (yyval.node) = create_node("arg_list", 2, (yyvsp[-2].node), (yyvsp[0].node));
+        ast_node* lb_node = create_node("LB", 0, (yylsp[-2]).first_line);
+        ast_node* rb_node = create_node("RB", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("array_access", 4, (yylsp[-3]).first_line, (yyvsp[-3].node), lb_node, (yyvsp[-1].node), rb_node);
     }
-#line 1707 "cminus.tab.c"
+#line 1912 "cminus.tab.c"
     break;
 
-  case 69: /* arg_list: expression  */
-#line 461 "cminus.y"
-                 { (yyval.node) = create_node("arg_list", 1, (yyvsp[0].node)); }
-#line 1713 "cminus.tab.c"
+  case 62: /* Exp: LPAREN Exp RPAREN  */
+#line 378 "cminus.y"
+                        {
+        ast_node* lp_node = create_node("LP", 0, (yylsp[-2]).first_line);
+        ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, lp_node, (yyvsp[-1].node), rp_node);
+    }
+#line 1922 "cminus.tab.c"
+    break;
+
+  case 63: /* Exp: Exp LBRACKET Exp error RBRACKET  */
+#line 383 "cminus.y"
+                                      {
+        printError('B', "Missing \"]\"");
+    }
+#line 1930 "cminus.tab.c"
+    break;
+
+  case 64: /* Exp: Exp LBRACE error RBRACE  */
+#line 386 "cminus.y"
+                              {
+        printError('B', "Syntax error between \"[]\""); // 打印错误消息
+    }
+#line 1938 "cminus.tab.c"
+    break;
+
+  case 65: /* Exp: ID LPAREN error RPAREN  */
+#line 389 "cminus.y"
+                             {
+        printError('B', "Syntax error in Exp"); // 打印错误消息
+    }
+#line 1946 "cminus.tab.c"
+    break;
+
+  case 66: /* arg_list: Exp COMMA arg_list  */
+#line 398 "cminus.y"
+                         {
+        (yyval.node) = create_node("arg_list", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
+    }
+#line 1954 "cminus.tab.c"
+    break;
+
+  case 67: /* arg_list: Exp  */
+#line 401 "cminus.y"
+          { 
+        (yyval.node) = create_node("arg_list", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
+    }
+#line 1962 "cminus.tab.c"
     break;
 
 
-#line 1717 "cminus.tab.c"
+#line 1966 "cminus.tab.c"
 
       default: break;
     }
@@ -1734,6 +1983,7 @@ yyreduce:
   yylen = 0;
 
   *++yyvsp = yyval;
+  *++yylsp = yyloc;
 
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
@@ -1763,6 +2013,7 @@ yyerrlab:
       yyerror (YY_("syntax error"));
     }
 
+  yyerror_range[1] = yylloc;
   if (yyerrstatus == 3)
     {
       /* If just tried and failed to reuse lookahead token after an
@@ -1777,7 +2028,7 @@ yyerrlab:
       else
         {
           yydestruct ("Error: discarding",
-                      yytoken, &yylval);
+                      yytoken, &yylval, &yylloc);
           yychar = YYEMPTY;
         }
     }
@@ -1831,9 +2082,9 @@ yyerrlab1:
       if (yyssp == yyss)
         YYABORT;
 
-
+      yyerror_range[1] = *yylsp;
       yydestruct ("Error: popping",
-                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp, yylsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -1843,6 +2094,9 @@ yyerrlab1:
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
+  yyerror_range[2] = yylloc;
+  ++yylsp;
+  YYLLOC_DEFAULT (*yylsp, yyerror_range, 2);
 
   /* Shift the error token.  */
   YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (yyn), yyvsp, yylsp);
@@ -1886,7 +2140,7 @@ yyreturnlab:
          user semantic actions for why this is necessary.  */
       yytoken = YYTRANSLATE (yychar);
       yydestruct ("Cleanup: discarding lookahead",
-                  yytoken, &yylval);
+                  yytoken, &yylval, &yylloc);
     }
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYABORT or YYACCEPT.  */
@@ -1895,7 +2149,7 @@ yyreturnlab:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp, yylsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
@@ -1906,6 +2160,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 474 "cminus.y"
-
+#line 407 "cminus.y"
 

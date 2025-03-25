@@ -17,8 +17,8 @@ typedef struct ast_node {
         float float_value;  // 添加float值支持
     } val;
     int linenumber;
-    struct ast_node* child; // 指向子节点的指针
-    struct ast_node* brother; // 指向兄弟节点的指针
+    int child_count;
+    struct ast_node** children;
 } ast_node;
 
 // 添加创建float叶节点的函数声明
@@ -29,7 +29,7 @@ void yyerror(const char *s);
 void printError(char errorType, char* msg);
 
 
-ast_node* create_node(const char* type, int child_count, ...);
+ast_node* create_node(const char* type, int child_count, int line, ...);
 ast_node* create_float_leaf(const char* type, float value);
 ast_node* create_str_leaf(const char* type, const char* value);
 ast_node* create_int_leaf(const char* type, int value);
