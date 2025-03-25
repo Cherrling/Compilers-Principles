@@ -18,9 +18,14 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if (yyparse() == 0) {
-        printf("Abstract Syntax Tree:\n");
+    yyparse();
+    
+    if (root != NULL) {
+        printf("\nAbstract Syntax Tree:\n");
         print_ast(root, 0);
+        free_ast(root);
+    } else {
+        printf("Error: Failed to generate AST\n");
     }
 
     free_ast(root);

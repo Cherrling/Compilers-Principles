@@ -18,6 +18,8 @@ letter      [A-Za-z]
 digit       [0-9]
 id          {letter}({letter}|{digit})*
 number      {digit}+
+digits      {digit}+
+float       ({digits}"."{digits})|({digits}".")|("."{digits})
 comment     "/*"[^*]*"*"+([^*/][^*]*"*"+)*"/"
 
 %%
@@ -28,6 +30,7 @@ comment     "/*"[^*]*"*"+([^*/][^*]*"*"+)*"/"
 "else"      { return ELSE; }
 "if"        { return IF; }
 "int"       { return INT; }
+"float"     { return FLOAT; }  // 添加float关键字
 "return"    { return RETURN; }
 "void"      { return VOID; }
 "while"     { return WHILE; }
@@ -60,9 +63,13 @@ comment     "/*"[^*]*"*"+([^*/][^*]*"*"+)*"/"
                 yylval.number = atoi(yytext); 
                 return NUM; 
             }
+{float}     {  
+                yylval.floating = atof(yytext);
+                return FLOAT_NUM;
+}
 
 .           { 
-                fprintf(stderr, "Error type A at line %d: unrecognized character '%s'\n", yylineno, yytext); 
+                fprintf(stderr, "Error type A at line %d: mysterious character '%s'\n", yylineno, yytext); 
                 yyerror("lexical error"); 
             }
 

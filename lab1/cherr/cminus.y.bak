@@ -9,24 +9,19 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
-ast_node* root = NULL;
-
-
 void yyerror(const char *s);
 
 %}
 
 %union {
     int number;
-    float floating;  // 添加float类型
     char* string;
     struct ast_node* node;
 }
 
 %token <number> NUM
-%token <floating> FLOAT_NUM  // 添加float数字token
 %token <string> ID
-%token ELSE IF INT FLOAT RETURN VOID WHILE
+%token ELSE IF INT RETURN VOID WHILE
 %token PLUS MINUS TIMES DIVIDE
 %token LT LTE GT GTE EQ NEQ
 %token ASSIGN SEMI COMMA
@@ -37,27 +32,12 @@ void yyerror(const char *s);
 %type <node> statement expression_stmt selection_stmt iteration_stmt return_stmt 
 %type <node> expression var simple_expression additive_expression term factor call 
 %type <node> args arg_list
-%type <string> type_specifier relop addop mulop
-
-/* 在声明部分添加以下内容 */
-// 在声明部分添加或修改以下内容
-%left COMMA
-%right ASSIGN
-%left EQ NEQ
-%left LT LTE GT GTE
-%left PLUS MINUS
-%left TIMES DIVIDE
-%nonassoc ELSE
-%nonassoc THEN
-
-/* 在文件顶部的声明中添加 */
 
 %%
 
 program
     : declaration_list { 
         $$ = $1; 
-        root = $$;  // 将解析完成的AST赋值给root
         printf("Parsing completed successfully.\n");
     }
     ;
@@ -79,48 +59,34 @@ declaration
 var_declaration
     : type_specifier ID SEMI {
         $$ = create_node("var_declaration", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
-    }
-    | type_specifier ID ASSIGN expression SEMI {
-        $$ = create_node("init_declaration", 3,
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            $4);
+            create_leaf("type_specifier", $1),
+            create_leaf("ID", $2));
     }
     | type_specifier ID LBRACKET NUM RBRACKET SEMI {
-        $$ = create_node("array_declaration", 3,
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            create_int_leaf("SIZE", $4));
+        $$ = create_node("var_declaration_array", 3, 
+            create_leaf("type_specifier", $1),
+            create_leaf("ID", $2),
+            create_leaf("NUM", $4));
     }
     ;
 
 type_specifier
     : INT { $$ = "int"; }
-    | FLOAT { $$ = "float"; }  // 添加float类型支持
     | VOID { $$ = "void"; }
     ;
 
 fun_declaration
-    : type_specifier ID LPAREN RPAREN compound_stmt {
+    : type_specifier ID LPAREN params RPAREN compound_stmt {
         $$ = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
-            create_str_leaf("params", "void"),
-            $5);
-    }
-    | type_specifier ID LPAREN params RPAREN compound_stmt {
-        $$ = create_node("fun_declaration", 4, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2),
+            create_leaf("type_specifier", $1),
+            create_leaf("ID", $2),
             $4, $6);
     }
     ;
 
 params
     : param_list { $$ = $1; }
-    | VOID { $$ = create_str_leaf("void_params", "void"); }
+    | VOID { $$ = create_leaf("void_params", "void"); }
     ;
 
 param_list
@@ -133,13 +99,13 @@ param_list
 param
     : type_specifier ID {
         $$ = create_node("param", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
+            create_leaf("type_specifier", $1),
+            create_leaf("ID", $2));
     }
     | type_specifier ID LBRACKET RBRACKET {
         $$ = create_node("param_array", 2, 
-            create_str_leaf("type_specifier", $1),
-            create_str_leaf("ID", $2));
+            create_leaf("type_specifier", $1),
+            create_leaf("ID", $2));
     }
     ;
 
@@ -177,14 +143,13 @@ expression_stmt
     ;
 
 selection_stmt
-    : IF LPAREN expression RPAREN statement SEMI ELSE statement SEMI {
-        $$ = create_node("if_else_stmt", 3, $3, $5, $8);
-    }
-    | IF LPAREN expression RPAREN statement SEMI {
+    : IF LPAREN expression RPAREN statement {
         $$ = create_node("if_stmt", 2, $3, $5);
     }
+    | IF LPAREN expression RPAREN statement ELSE statement {
+        $$ = create_node("if_else_stmt", 3, $3, $5, $7);
+    }
     ;
-
 
 iteration_stmt
     : WHILE LPAREN expression RPAREN statement {
@@ -193,7 +158,7 @@ iteration_stmt
     ;
 
 return_stmt
-    : RETURN SEMI { $$ = create_str_leaf("return", "return"); }
+    : RETURN SEMI { $$ = create_leaf("return", "return"); }
     | RETURN expression SEMI { $$ = create_node("return_expr", 1, $2); }
     ;
 
@@ -204,71 +169,65 @@ expression
     | simple_expression { $$ = $1; }
     ;
 
-/* 数组访问 */
 var
-    : ID { 
-        $$ = create_str_leaf("var", $1); 
-    }
-    | ID LBRACKET expression RBRACKET { 
-        $$ = create_node("array_access", 2, create_str_leaf("ID", $1), $3); 
-    }
-    | ID LBRACKET expression COMMA expression RBRACKET {
-        fprintf(stderr, "Error type B at Line %d: Missing \"]\".\n", yylineno);
-        YYERROR;
+    : ID { $$ = create_leaf("var", $1); }
+    | ID LBRACKET expression RBRACKET {
+        $$ = create_node("array_access", 2, 
+            create_leaf("ID", $1), $3);
     }
     ;
 
 simple_expression
     : additive_expression relop additive_expression {
-        $$ = create_node("rel_expr", 3, $1, create_str_leaf("relop", $2), $3);
+        $$ = create_node("rel_expr", 3, $1, $2, $3);
     }
     | additive_expression { $$ = $1; }
     ;
 
 relop
-    : LTE { $$ = "<="; }
-    | LT { $$ = "<"; }
-    | GT { $$ = ">"; }
-    | GTE { $$ = ">="; }
-    | EQ { $$ = "=="; }
-    | NEQ { $$ = "!="; }
+    : LTE { $$ = create_leaf("relop", "<="); }
+    | LT { $$ = create_leaf("relop", "<"); }
+    | GT { $$ = create_leaf("relop", ">"); }
+    | GTE { $$ = create_leaf("relop", ">="); }
+    | EQ { $$ = create_leaf("relop", "=="); }
+    | NEQ { $$ = create_leaf("relop", "!="); }
     ;
 
 additive_expression
     : additive_expression addop term {
-        $$ = create_node("add_expr", 3, $1, create_str_leaf("addop", $2), $3);
+        $$ = create_node("add_expr", 3, $1, $2, $3);
     }
     | term { $$ = $1; }
     ;
 
 addop
-    : PLUS { $$ = "+"; }
-    | MINUS { $$ = "-"; }
+    : PLUS { $$ = create_leaf("addop", "+"); }
+    | MINUS { $$ = create_leaf("addop", "-"); }
     ;
 
 term
     : term mulop factor {
-        $$ = create_node("mul_expr", 3, $1, create_str_leaf("mulop", $2), $3);
+        $$ = create_node("mul_expr", 3, $1, $2, $3);
     }
     | factor { $$ = $1; }
     ;
 
 mulop
-    : TIMES { $$ = "*"; }
-    | DIVIDE { $$ = "/"; }
+    : TIMES { $$ = create_leaf("mulop", "*"); }
+    | DIVIDE { $$ = create_leaf("mulop", "/"); }
     ;
 
 factor
     : LPAREN expression RPAREN { $$ = $2; }
     | var { $$ = $1; }
     | call { $$ = $1; }
-    | NUM { $$ = create_int_leaf("NUM", $1); }
+    | NUM { $$ = create_leaf("NUM", $1); }
     ;
 
 call
     : ID LPAREN args RPAREN {
         $$ = create_node("call", 2, 
-            create_str_leaf("ID", $1), $3);
+            create_leaf("ID", $1), $3);
     }
     ;
 
@@ -282,17 +241,6 @@ arg_list
         $$ = create_node("arg_list", 2, $1, $3);
     }
     | expression { $$ = create_node("arg_list", 1, $1); }
-    ;
-
-
-
-/* 在适当的位置添加错误恢复规则 */
-statement
-    : expression_stmt
-    | compound_stmt
-    | selection_stmt
-    | iteration_stmt
-    | return_stmt
     ;
 
 %%
