@@ -21,20 +21,17 @@ struct Node* create_Node_l(char* name) { // 定义函数 create_Node_l，用于�
 }
 %}
 
-%option yylineno // 开启 yylineno 选项，使得可以在词法分析器中使用 yylineno 表示当前行号
-IGNORE [\r \t] // 定义忽略的空白字符
-CHANGELINE [\n] // 定义换行符
+IGNORE [\r \t] 
+CHANGELINE [\n] 
 
-// 定义正则表达式
-INT 0|[1-9][0-9]* // 匹配整数
-FLOAT {INT}\.[0-9]+ // 匹配浮点数
-ID [_a-zA-Z][0-9_a-zA-Z]* // 匹配标识符
-RELOP >|<|>=|<=|==|!= // 匹配关系运算符
-TYPE int|float // 匹配类型
-DIGIT [0-9] // 匹配数字
+INT 0|[1-9][0-9]* 
+FLOAT {INT}\.[0-9]+ 
+ID [_a-zA-Z][0-9_a-zA-Z]* 
+RELOP >|<|>=|<=|==|!= 
+TYPE int|float 
+DIGIT [0-9] 
 
 %%
-// 规则与动作部分
 ";" {
     yylval = create_Node_l("SEMI\0"); // 创建分号节点
     return SEMI; // 返回分号标记
@@ -157,11 +154,10 @@ DIGIT [0-9] // 匹配数字
 }
 
 
-{IGNORE} {} // 忽略空白字符
+{IGNORE} {} 
 
-{CHANGELINE} {yycolumn=1;} // 换行时更新列号为1
+{CHANGELINE} {yycolumn=1;} 
 
-// 匹配整数和浮点数
 {INT} {
     yylval = create_Node_l("INT\0"); // 创建整数节点
     yylval -> int_number = atoi(yytext); // 将识别到的整数字符串转换成整数并赋值给节点

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ast.h"
+#include "utils.h"
 
 extern int yylex();
 extern int yylineno;
@@ -10,27 +10,34 @@ extern char* yytext;
 extern FILE* yyin;
 
 ast_node* root = NULL;
+int Err = 0;
 
 
 void yyerror(const char *s);
 
+
+
+
 %}
 
 %union {
-    int number;
-    float floating;  // 添加float类型
+    int int_number;
+    float float_number;  // 添加float类型
     char* string;
     struct ast_node* node;
 }
 
-%token <number> NUM
-%token <floating> FLOAT_NUM  // 添加float数字token
+%token <int_number> INT 
+%token <float_number> FLOAT  // 添加float数字token
 %token <string> ID
-%token ELSE IF INT FLOAT RETURN VOID WHILE
+%token <string> TYPE
+%token ELSE IF RETURN VOID WHILE STRUCT
 %token PLUS MINUS TIMES DIVIDE
 %token LT LTE GT GTE EQ NEQ
 %token ASSIGN SEMI COMMA
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE
+%token OR AND DOT NOT 
+
 
 %type <node> program declaration_list declaration var_declaration fun_declaration 
 %type <node> params param_list param compound_stmt local_declarations statement_list 
@@ -39,8 +46,16 @@ void yyerror(const char *s);
 %type <node> args arg_list
 %type <string> type_specifier relop addop mulop
 
-/* 在声明部分添加以下内容 */
-// 在声明部分添加或修改以下内容
+%type <node> struct_member struct_member_list  StructSpecifier
+%type <node> Specifier VarDec Exp DefList Def DecList Dec OptTag Tag
+%type <node> array_access
+
+
+%left LBRACKET RBRACKET
+%left LBRACE RBRACE
+%left LPAREN RPAREN
+%left OR 
+%left AND 
 %left COMMA
 %right ASSIGN
 %left EQ NEQ
@@ -49,8 +64,6 @@ void yyerror(const char *s);
 %left TIMES DIVIDE
 %nonassoc ELSE
 %nonassoc THEN
-
-/* 在文件顶部的声明中添加 */
 
 %%
 
@@ -82,13 +95,19 @@ var_declaration
             create_str_leaf("type_specifier", $1),
             create_str_leaf("ID", $2));
     }
+    | STRUCT ID ID SEMI {
+        $$ = create_node("struct_var_declaration", 3,
+            create_str_leaf("STRUCT", "struct"),
+            create_str_leaf("TYPE_ID", $2),
+            create_str_leaf("ID", $3));
+    }
     | type_specifier ID ASSIGN expression SEMI {
         $$ = create_node("init_declaration", 3,
             create_str_leaf("type_specifier", $1),
             create_str_leaf("ID", $2),
             $4);
     }
-    | type_specifier ID LBRACKET NUM RBRACKET SEMI {
+    | type_specifier ID LBRACKET INT RBRACKET SEMI {
         $$ = create_node("array_declaration", 3,
             create_str_leaf("type_specifier", $1),
             create_str_leaf("ID", $2),
@@ -100,6 +119,11 @@ type_specifier
     : INT { $$ = "int"; }
     | FLOAT { $$ = "float"; }  // 添加float类型支持
     | VOID { $$ = "void"; }
+    | STRUCT ID {
+        char* type_name = (char*)malloc(strlen($2) + 8);
+        sprintf(type_name, "struct %s", $2);
+        $$ = type_name;
+    }
     ;
 
 fun_declaration
@@ -117,6 +141,159 @@ fun_declaration
             $4, $6);
     }
     ;
+
+struct_member
+    : type_specifier ID SEMI {
+        $$ = create_node("struct_member", 2,
+            create_str_leaf("type_specifier", $1),
+            create_str_leaf("ID", $2));
+    }
+    ;
+struct_member_list
+    : struct_member {
+        $$ = create_node("struct_member_list", 1, $1);
+    }
+    | struct_member_list struct_member {
+        $$ = create_node("struct_member_list", 2, $1, $2);
+    }
+    ;
+StructSpecifier
+    : STRUCT ID LBRACE struct_member_list RBRACE {
+        $$ = create_node("struct_definition", 3,
+            create_str_leaf("STRUCT", "struct"),
+            create_str_leaf("ID", $2),
+            $4);
+    }
+    | STRUCT ID LBRACE error RBRACE {
+        Err = 1;
+        if (lastErrLineno != yylineno)
+            printError('B', "Invalid struct definition");
+    }
+    ;
+
+
+OptTag
+    : /* empty */ {
+        $$ = NULL;
+    }
+    | ID {
+        $$ = create_str_leaf("ID", $1);
+    }
+    ;
+
+Tag
+    : ID {
+        $$ = create_str_leaf("ID", $1);
+    }
+    ;
+
+Specifier
+    : TYPE { 
+        $$ = create_str_leaf("TYPE", $1);
+    }
+    | StructSpecifier { 
+        $$ = $1;
+    }
+    ;
+
+// 修改数组访问相关的规则
+VarDec
+    : ID { 
+        $$ = create_str_leaf("ID", $1);
+    }
+    | VarDec LBRACKET INT RBRACKET {
+        $$ = create_node("array_decl", 2, 
+            $1, 
+            create_int_leaf("size", $3));
+    }
+    | VarDec LBRACKET error RBRACKET {
+        Err = 1;
+        if (lastErrLineno != yylineno)
+            printError('B', "Invalid array size");
+    }
+    ;
+
+
+
+
+Def
+    : Specifier DecList SEMI {
+        $$ = create_node("def", 3, $1, $2, create_str_leaf("SEMI", ";"));
+    }
+    | Specifier error SEMI {
+        Err = 1;
+        if (lastErrLineno != yylineno)
+            printError('B', "Invalid variable definition");
+    }
+    ;
+Dec
+    : VarDec {
+        $$ = $1;
+    }
+    | VarDec ASSIGN Exp {
+        $$ = create_node("init_dec", 3, $1, 
+            create_str_leaf("ASSIGN", "="), $3);
+    }
+    ;
+DefList
+    : /* empty */ { 
+        $$ = NULL;
+    }
+    | Def DefList {
+        if ($2 == NULL) {
+            $$ = create_node("DefList", 1, $1);
+        } else {
+            $$ = create_node("DefList", 2, $1, $2);
+        }
+    }
+    ;
+DecList
+    : Dec {
+        $$ = create_node("declist", 1, $1);
+    }
+    | Dec COMMA DecList {
+        $$ = create_node("declist", 3, $1, 
+            create_str_leaf("COMMA", ","), $3);
+    }
+    ;
+
+
+Exp
+    : ID { 
+        $$ = create_str_leaf("ID", $1);
+    }
+    | Exp DOT ID {
+        $$ = create_node("struct_access", 3,
+            $1,
+            create_str_leaf("DOT", "."),
+            create_str_leaf("ID", $3));
+    }
+    | INT { 
+        $$ = create_int_leaf("INT", $1);
+    }
+    | FLOAT {
+        $$ = create_float_leaf("FLOAT", $1);
+    }
+    | Exp PLUS Exp {
+        $$ = create_node("add", 2, $1, $3);
+    }
+    | Exp MINUS Exp {
+        $$ = create_node("sub", 2, $1, $3);
+    }
+    | Exp TIMES Exp {
+        $$ = create_node("mul", 2, $1, $3);
+    }
+    | Exp DIVIDE Exp {
+        $$ = create_node("div", 2, $1, $3);
+    }
+    | LPAREN Exp RPAREN {
+        $$ = $2;
+    }
+    | Exp LBRACKET Exp error RBRACKET {
+        printError('B', "Missing \"]\"");
+    }
+    ;
+
 
 params
     : param_list { $$ = $1; }
@@ -262,7 +439,7 @@ factor
     : LPAREN expression RPAREN { $$ = $2; }
     | var { $$ = $1; }
     | call { $$ = $1; }
-    | NUM { $$ = create_int_leaf("NUM", $1); }
+    | INT { $$ = create_int_leaf("INT", $1); }
     ;
 
 call
@@ -285,7 +462,6 @@ arg_list
     ;
 
 
-
 /* 在适当的位置添加错误恢复规则 */
 statement
     : expression_stmt
@@ -297,6 +473,3 @@ statement
 
 %%
 
-void yyerror(const char *s) {
-    fprintf(stderr, "Error type B at line %d: %s near '%s'\n", yylineno, s, yytext);
-}
