@@ -231,10 +231,14 @@ Stmt
 
 StructSpecifier
     : STRUCT OptTag LBRACE DefList RBRACE {
-        $$ = create_node("StructSpecifier", 2, @1.first_line, $2, $4); 
+        ast_node* struct_node = create_node("STRUCT", 0, @1.first_line);
+        ast_node* lb_node = create_node("LC", 0, @3.first_line);
+        ast_node* rb_node = create_node("RC", 0, @5.first_line);
+        $$ = create_node("StructSpecifier", 5, @1.first_line, struct_node, $2, lb_node, $4, rb_node); 
     } 
     | STRUCT Tag {
-        $$ = create_node("StructSpecifier", 1, @1.first_line, $2); 
+        ast_node* struct_node = create_node("STRUCT", 0, @1.first_line);
+        $$ = create_node("StructSpecifier", 2, @1.first_line, struct_node, $2); 
     }
     ;
 
@@ -243,11 +247,11 @@ OptTag
     : /* empty */ {
         $$ = create_node("OptTag", 0, 0);
         $$ -> val.int_value = 0; 
-
     }
     | ID {
-        $$ = create_node("OptTag", 0, @1.first_line); 
-
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存ID值
+        $$ = create_node("OptTag", 1, @1.first_line, id_node); 
     }
     ;
 
@@ -270,8 +274,8 @@ DefList
 
 Def
     : Specifier DecList SEMI {
-        $$ = create_node("Def", 2, @1.first_line, $1, $2); 
-
+        ast_node* semi_node = create_node("SEMI", 0, @3.first_line);
+        $$ = create_node("Def", 3, @1.first_line, $1, $2, semi_node); 
     }
     | Specifier error SEMI {
         char msg[32]; // 定义错误信息缓冲区
@@ -289,7 +293,8 @@ DecList
         $$ = create_node("DecList", 1, @1.first_line, $1); 
     }
     | Dec COMMA DecList {
-        $$ = create_node("DecList", 2, @1.first_line, $1, $3); 
+        ast_node* comma_node = create_node("COMMA", 0, @2.first_line);
+        $$ = create_node("DecList", 3, @1.first_line, $1, comma_node, $3);
     }
     ;
 Dec
@@ -307,11 +312,15 @@ Dec
 
 Exp
     : ID { 
-        $$ = create_node("ID",0 , @1.first_line);
-        $$->val.str_value = strdup($1);  // 保存ID的值
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存ID的值
+        $$ = create_node("Exp", 1, @1.first_line, id_node);  // 将ID作为Exp的子节点
     }
     | Exp DOT ID {
-        $$ = create_node("struct_access",1 , @1.first_line, $1);
+        ast_node* dot_node = create_node("DOT", 0, @2.first_line);
+        ast_node* id_node = create_node("ID", 0, @3.first_line);
+        id_node->val.str_value = strdup($3);  // 保存ID值
+        $$ = create_node("Exp", 3, @1.first_line, $1, dot_node, id_node);
     }
     | INT { 
         ast_node* int_node = create_node("INT", 0, @1.first_line);
@@ -325,15 +334,13 @@ Exp
     }
     | Exp ASSIGN Exp {
         ast_node* assign_node = create_node("ASSIGN", 0, @2.first_line);
-        assign_node->val.str_value = "=";
-        ast_node* left_exp = create_node("Exp", 1, @1.first_line, $1);
-        $$ = create_node("Exp", 3, @1.first_line, left_exp, assign_node, $3);
+        $$ = create_node("Exp", 3, @1.first_line, $1, assign_node, $3);
     } 
     | Exp PLUS Exp {
         ast_node* plus_node = create_node("PLUS", 0, @2.first_line);
         ast_node* left_exp = create_node("Exp", 1, @1.first_line, $1);
         ast_node* right_exp = create_node("Exp", 1, @3.first_line, $3);
-        $$ = create_node("Exp", 3, @1.first_line, left_exp, plus_node, right_exp);
+        $$ = create_node("Exp", 3, @1.first_line, $1, plus_node, $3);
     }
     | Exp MINUS Exp {
         $$ = create_node("minus",2 , @1.first_line, $1, $3);

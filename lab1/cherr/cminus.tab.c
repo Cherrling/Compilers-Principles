@@ -572,10 +572,10 @@ static const yytype_int16 yyrline[] =
        0,    69,    69,    82,    85,    96,   101,   106,   109,   114,
      117,   121,   126,   132,   140,   145,   152,   159,   166,   174,
      180,   183,   188,   193,   201,   204,   211,   216,   219,   222,
-     225,   228,   233,   236,   243,   248,   255,   262,   266,   272,
-     276,   281,   288,   291,   296,   299,   309,   313,   316,   321,
-     326,   332,   338,   341,   344,   347,   350,   353,   356,   359,
-     366,   373,   378,   383,   386,   389,   398,   401
+     225,   228,   233,   239,   247,   251,   259,   266,   270,   276,
+     280,   285,   292,   295,   301,   304,   314,   319,   325,   330,
+     335,   339,   345,   348,   351,   354,   357,   360,   363,   366,
+     373,   380,   385,   390,   393,   396,   405,   408
 };
 #endif
 
@@ -1643,242 +1643,249 @@ yyreduce:
   case 32: /* StructSpecifier: STRUCT OptTag LBRACE DefList RBRACE  */
 #line 233 "cminus.y"
                                           {
-        (yyval.node) = create_node("StructSpecifier", 2, (yylsp[-4]).first_line, (yyvsp[-3].node), (yyvsp[-1].node)); 
+        ast_node* struct_node = create_node("STRUCT", 0, (yylsp[-4]).first_line);
+        ast_node* lb_node = create_node("LC", 0, (yylsp[-2]).first_line);
+        ast_node* rb_node = create_node("RC", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("StructSpecifier", 5, (yylsp[-4]).first_line, struct_node, (yyvsp[-3].node), lb_node, (yyvsp[-1].node), rb_node); 
     }
-#line 1649 "cminus.tab.c"
+#line 1652 "cminus.tab.c"
     break;
 
   case 33: /* StructSpecifier: STRUCT Tag  */
-#line 236 "cminus.y"
+#line 239 "cminus.y"
                  {
-        (yyval.node) = create_node("StructSpecifier", 1, (yylsp[-1]).first_line, (yyvsp[0].node)); 
+        ast_node* struct_node = create_node("STRUCT", 0, (yylsp[-1]).first_line);
+        (yyval.node) = create_node("StructSpecifier", 2, (yylsp[-1]).first_line, struct_node, (yyvsp[0].node)); 
     }
-#line 1657 "cminus.tab.c"
+#line 1661 "cminus.tab.c"
     break;
 
   case 34: /* OptTag: %empty  */
-#line 243 "cminus.y"
+#line 247 "cminus.y"
                   {
         (yyval.node) = create_node("OptTag", 0, 0);
         (yyval.node) -> val.int_value = 0; 
-
     }
-#line 1667 "cminus.tab.c"
+#line 1670 "cminus.tab.c"
     break;
 
   case 35: /* OptTag: ID  */
-#line 248 "cminus.y"
+#line 251 "cminus.y"
          {
-        (yyval.node) = create_node("OptTag", 0, (yylsp[0]).first_line); 
-
+        ast_node* id_node = create_node("ID", 0, (yylsp[0]).first_line);
+        id_node->val.str_value = strdup((yyvsp[0].string));  // 保存ID值
+        (yyval.node) = create_node("OptTag", 1, (yylsp[0]).first_line, id_node); 
     }
-#line 1676 "cminus.tab.c"
+#line 1680 "cminus.tab.c"
     break;
 
   case 36: /* Tag: ID  */
-#line 255 "cminus.y"
+#line 259 "cminus.y"
          {
         (yyval.node) = create_node("Tag", 0, (yylsp[0]).first_line); 
 
     }
-#line 1685 "cminus.tab.c"
+#line 1689 "cminus.tab.c"
     break;
 
   case 37: /* DefList: %empty  */
-#line 262 "cminus.y"
+#line 266 "cminus.y"
                   { 
         (yyval.node) = NULL;
 
     }
-#line 1694 "cminus.tab.c"
+#line 1698 "cminus.tab.c"
     break;
 
   case 38: /* DefList: Def DefList  */
-#line 266 "cminus.y"
+#line 270 "cminus.y"
                   {
         (yyval.node) = create_node("DefList", 2, (yylsp[-1]).first_line, (yyvsp[-1].node), (yyvsp[0].node));
     }
-#line 1702 "cminus.tab.c"
+#line 1706 "cminus.tab.c"
     break;
 
   case 39: /* Def: Specifier DecList SEMI  */
-#line 272 "cminus.y"
+#line 276 "cminus.y"
                              {
-        (yyval.node) = create_node("Def", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[-1].node)); 
-
+        ast_node* semi_node = create_node("SEMI", 0, (yylsp[0]).first_line);
+        (yyval.node) = create_node("Def", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[-1].node), semi_node); 
     }
-#line 1711 "cminus.tab.c"
+#line 1715 "cminus.tab.c"
     break;
 
   case 40: /* Def: Specifier error SEMI  */
-#line 276 "cminus.y"
+#line 280 "cminus.y"
                            {
         char msg[32]; // 定义错误信息缓冲区
         sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
         printError('B', msg); // 打印错误消息
     }
-#line 1721 "cminus.tab.c"
+#line 1725 "cminus.tab.c"
     break;
 
   case 41: /* Def: Specifier DecList error  */
-#line 281 "cminus.y"
+#line 285 "cminus.y"
                               {
         printError('B',"Missing \";\""); // 打印错误消息
     }
-#line 1729 "cminus.tab.c"
+#line 1733 "cminus.tab.c"
     break;
 
   case 42: /* DecList: Dec  */
-#line 288 "cminus.y"
+#line 292 "cminus.y"
           {
         (yyval.node) = create_node("DecList", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
     }
-#line 1737 "cminus.tab.c"
+#line 1741 "cminus.tab.c"
     break;
 
   case 43: /* DecList: Dec COMMA DecList  */
-#line 291 "cminus.y"
+#line 295 "cminus.y"
                         {
-        (yyval.node) = create_node("DecList", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node)); 
+        ast_node* comma_node = create_node("COMMA", 0, (yylsp[-1]).first_line);
+        (yyval.node) = create_node("DecList", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), comma_node, (yyvsp[0].node));
     }
-#line 1745 "cminus.tab.c"
+#line 1750 "cminus.tab.c"
     break;
 
   case 44: /* Dec: VarDec  */
-#line 296 "cminus.y"
+#line 301 "cminus.y"
              {
         (yyval.node) = create_node("Dec", 1, (yylsp[0]).first_line, (yyvsp[0].node)); // 将 VarDec 作为 Dec 的子节点
     }
-#line 1753 "cminus.tab.c"
+#line 1758 "cminus.tab.c"
     break;
 
   case 45: /* Dec: VarDec ASSIGN Exp  */
-#line 299 "cminus.y"
+#line 304 "cminus.y"
                         {
         ast_node* assign_node = create_node("ASSIGN", 0, (yylsp[-1]).first_line);
         assign_node->val.str_value = "=";
         (yyval.node) = create_node("Dec", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), assign_node, (yyvsp[0].node)); 
     }
-#line 1763 "cminus.tab.c"
+#line 1768 "cminus.tab.c"
     break;
 
   case 46: /* Exp: ID  */
-#line 309 "cminus.y"
+#line 314 "cminus.y"
          { 
-        (yyval.node) = create_node("ID",0 , (yylsp[0]).first_line);
-        (yyval.node)->val.str_value = strdup((yyvsp[0].string));  // 保存ID的值
+        ast_node* id_node = create_node("ID", 0, (yylsp[0]).first_line);
+        id_node->val.str_value = strdup((yyvsp[0].string));  // 保存ID的值
+        (yyval.node) = create_node("Exp", 1, (yylsp[0]).first_line, id_node);  // 将ID作为Exp的子节点
     }
-#line 1772 "cminus.tab.c"
+#line 1778 "cminus.tab.c"
     break;
 
   case 47: /* Exp: Exp DOT ID  */
-#line 313 "cminus.y"
+#line 319 "cminus.y"
                  {
-        (yyval.node) = create_node("struct_access",1 , (yylsp[-2]).first_line, (yyvsp[-2].node));
+        ast_node* dot_node = create_node("DOT", 0, (yylsp[-1]).first_line);
+        ast_node* id_node = create_node("ID", 0, (yylsp[0]).first_line);
+        id_node->val.str_value = strdup((yyvsp[0].string));  // 保存ID值
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), dot_node, id_node);
     }
-#line 1780 "cminus.tab.c"
+#line 1789 "cminus.tab.c"
     break;
 
   case 48: /* Exp: INT  */
-#line 316 "cminus.y"
+#line 325 "cminus.y"
           { 
         ast_node* int_node = create_node("INT", 0, (yylsp[0]).first_line);
         int_node->val.int_value = (yyvsp[0].int_number);  // 保存整数值
         (yyval.node) = create_node("Exp", 1, (yylsp[0]).first_line, int_node);
     }
-#line 1790 "cminus.tab.c"
+#line 1799 "cminus.tab.c"
     break;
 
   case 49: /* Exp: FLOAT  */
-#line 321 "cminus.y"
+#line 330 "cminus.y"
             {
         ast_node* float_node = create_node("FLOAT", 0, (yylsp[0]).first_line);
         float_node->val.float_value = (yyvsp[0].float_number);  // 保存整数值
         (yyval.node) = create_node("Exp", 1, (yylsp[0]).first_line, float_node);
     }
-#line 1800 "cminus.tab.c"
+#line 1809 "cminus.tab.c"
     break;
 
   case 50: /* Exp: Exp ASSIGN Exp  */
-#line 326 "cminus.y"
+#line 335 "cminus.y"
                      {
         ast_node* assign_node = create_node("ASSIGN", 0, (yylsp[-1]).first_line);
-        assign_node->val.str_value = "=";
-        ast_node* left_exp = create_node("Exp", 1, (yylsp[-2]).first_line, (yyvsp[-2].node));
-        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, left_exp, assign_node, (yyvsp[0].node));
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), assign_node, (yyvsp[0].node));
     }
-#line 1811 "cminus.tab.c"
+#line 1818 "cminus.tab.c"
     break;
 
   case 51: /* Exp: Exp PLUS Exp  */
-#line 332 "cminus.y"
+#line 339 "cminus.y"
                    {
         ast_node* plus_node = create_node("PLUS", 0, (yylsp[-1]).first_line);
         ast_node* left_exp = create_node("Exp", 1, (yylsp[-2]).first_line, (yyvsp[-2].node));
         ast_node* right_exp = create_node("Exp", 1, (yylsp[0]).first_line, (yyvsp[0].node));
-        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, left_exp, plus_node, right_exp);
+        (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, (yyvsp[-2].node), plus_node, (yyvsp[0].node));
     }
-#line 1822 "cminus.tab.c"
+#line 1829 "cminus.tab.c"
     break;
 
   case 52: /* Exp: Exp MINUS Exp  */
-#line 338 "cminus.y"
+#line 345 "cminus.y"
                     {
         (yyval.node) = create_node("minus",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1830 "cminus.tab.c"
+#line 1837 "cminus.tab.c"
     break;
 
   case 53: /* Exp: Exp TIMES Exp  */
-#line 341 "cminus.y"
+#line 348 "cminus.y"
                     {
         (yyval.node) = create_node("mul",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1838 "cminus.tab.c"
+#line 1845 "cminus.tab.c"
     break;
 
   case 54: /* Exp: Exp DIVIDE Exp  */
-#line 344 "cminus.y"
+#line 351 "cminus.y"
                      {
         (yyval.node) = create_node("div",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1846 "cminus.tab.c"
+#line 1853 "cminus.tab.c"
     break;
 
   case 55: /* Exp: Exp RELOP Exp  */
-#line 347 "cminus.y"
+#line 354 "cminus.y"
                     {
         (yyval.node) = create_node("RELOP",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1854 "cminus.tab.c"
+#line 1861 "cminus.tab.c"
     break;
 
   case 56: /* Exp: Exp AND Exp  */
-#line 350 "cminus.y"
+#line 357 "cminus.y"
                   {
         (yyval.node) = create_node("AND",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1862 "cminus.tab.c"
+#line 1869 "cminus.tab.c"
     break;
 
   case 57: /* Exp: Exp OR Exp  */
-#line 353 "cminus.y"
+#line 360 "cminus.y"
                  {
         (yyval.node) = create_node("OR",2 , (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1870 "cminus.tab.c"
+#line 1877 "cminus.tab.c"
     break;
 
   case 58: /* Exp: NOT Exp  */
-#line 356 "cminus.y"
+#line 363 "cminus.y"
              {
         (yyval.node) = create_node("NOT",1 , (yylsp[-1]).first_line, (yyvsp[0].node));
     }
-#line 1878 "cminus.tab.c"
+#line 1885 "cminus.tab.c"
     break;
 
   case 59: /* Exp: ID LPAREN RPAREN  */
-#line 359 "cminus.y"
+#line 366 "cminus.y"
                        {
         ast_node* id_node = create_node("ID", 0, (yylsp[-2]).first_line);
         id_node->val.str_value = strdup((yyvsp[-2].string));
@@ -1886,11 +1893,11 @@ yyreduce:
         ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
         (yyval.node) = create_node("CALL", 3, (yylsp[-2]).first_line, id_node, lp_node, rp_node);
     }
-#line 1890 "cminus.tab.c"
+#line 1897 "cminus.tab.c"
     break;
 
   case 60: /* Exp: ID LPAREN arg_list RPAREN  */
-#line 366 "cminus.y"
+#line 373 "cminus.y"
                                {
         ast_node* id_node = create_node("ID", 0, (yylsp[-3]).first_line);
         id_node->val.str_value = strdup((yyvsp[-3].string));
@@ -1898,71 +1905,71 @@ yyreduce:
         ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
         (yyval.node) = create_node("CALL", 4, (yylsp[-3]).first_line, id_node, lp_node, (yyvsp[-1].node), rp_node);
     }
-#line 1902 "cminus.tab.c"
+#line 1909 "cminus.tab.c"
     break;
 
   case 61: /* Exp: Exp LBRACKET Exp RBRACKET  */
-#line 373 "cminus.y"
+#line 380 "cminus.y"
                                 {
         ast_node* lb_node = create_node("LB", 0, (yylsp[-2]).first_line);
         ast_node* rb_node = create_node("RB", 0, (yylsp[0]).first_line);
         (yyval.node) = create_node("array_access", 4, (yylsp[-3]).first_line, (yyvsp[-3].node), lb_node, (yyvsp[-1].node), rb_node);
     }
-#line 1912 "cminus.tab.c"
+#line 1919 "cminus.tab.c"
     break;
 
   case 62: /* Exp: LPAREN Exp RPAREN  */
-#line 378 "cminus.y"
+#line 385 "cminus.y"
                         {
         ast_node* lp_node = create_node("LP", 0, (yylsp[-2]).first_line);
         ast_node* rp_node = create_node("RP", 0, (yylsp[0]).first_line);
         (yyval.node) = create_node("Exp", 3, (yylsp[-2]).first_line, lp_node, (yyvsp[-1].node), rp_node);
     }
-#line 1922 "cminus.tab.c"
+#line 1929 "cminus.tab.c"
     break;
 
   case 63: /* Exp: Exp LBRACKET Exp error RBRACKET  */
-#line 383 "cminus.y"
+#line 390 "cminus.y"
                                       {
         printError('B', "Missing \"]\"");
     }
-#line 1930 "cminus.tab.c"
+#line 1937 "cminus.tab.c"
     break;
 
   case 64: /* Exp: Exp LBRACE error RBRACE  */
-#line 386 "cminus.y"
+#line 393 "cminus.y"
                               {
         printError('B', "Syntax error between \"[]\""); // 打印错误消息
     }
-#line 1938 "cminus.tab.c"
+#line 1945 "cminus.tab.c"
     break;
 
   case 65: /* Exp: ID LPAREN error RPAREN  */
-#line 389 "cminus.y"
+#line 396 "cminus.y"
                              {
         printError('B', "Syntax error in Exp"); // 打印错误消息
     }
-#line 1946 "cminus.tab.c"
+#line 1953 "cminus.tab.c"
     break;
 
   case 66: /* arg_list: Exp COMMA arg_list  */
-#line 398 "cminus.y"
+#line 405 "cminus.y"
                          {
         (yyval.node) = create_node("arg_list", 2, (yylsp[-2]).first_line, (yyvsp[-2].node), (yyvsp[0].node));
     }
-#line 1954 "cminus.tab.c"
+#line 1961 "cminus.tab.c"
     break;
 
   case 67: /* arg_list: Exp  */
-#line 401 "cminus.y"
+#line 408 "cminus.y"
           { 
         (yyval.node) = create_node("arg_list", 1, (yylsp[0]).first_line, (yyvsp[0].node)); 
     }
-#line 1962 "cminus.tab.c"
+#line 1969 "cminus.tab.c"
     break;
 
 
-#line 1966 "cminus.tab.c"
+#line 1973 "cminus.tab.c"
 
       default: break;
     }
@@ -2160,5 +2167,5 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 407 "cminus.y"
+#line 414 "cminus.y"
 

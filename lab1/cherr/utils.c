@@ -80,7 +80,7 @@ void print_ast(ast_node* node, int level) {
         if (strcmp(node->type, "INT") == 0) {
             printf(": %d", node->val.int_value);
         } else if (strcmp(node->type, "FLOAT") == 0) {
-            printf(": %d", node->val.float_value);
+            printf(": %f", node->val.float_value);
         } else if (strcmp(node->type, "ASSIGN") == 0) {
             printf("OP");  // 打印ASSIGNOP
         } else if (strcmp(node->type, "PLUS") == 0) {
