@@ -17,4 +17,10 @@ cminus: lex.yy.c cminus.tab.c cminus.tab.h utils.c main.c
 clean:
 	rm -f cminus cminus.tab.c cminus.tab.h lex.yy.c
 
+test: cminus
+	-./cminus test1.cminus
+	-./cminus test2.cminus
+	-./cminus test3.cminus
+	-./cminus test4.cminus
+
 .PHONY: all clean

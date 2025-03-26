@@ -49,17 +49,18 @@ void yyerror(const char *s);
 %type <node> Specifier Exp DefList Def DecList Dec OptTag Tag
 
 
-%left LBRACKET RBRACKET
-%left LBRACE RBRACE
-%left LPAREN RPAREN
-%left OR 
-%left AND 
-%left COMMA
-%right ASSIGN
-%left EQ NEQ RELOP
-%left LT LTE GT GTE
-%left PLUS MINUS
-%left TIMES DIVIDE
+%left OR                   // 逻辑或
+%left AND                  // 逻辑与
+%left EQ NEQ              // 相等判断
+%left LT LTE GT GTE       // 比较运算符
+%left RELOP       // 比较运算符
+%left PLUS MINUS          // 加减
+%left TIMES DIVIDE        // 乘除
+%right NOT                // 逻辑非
+%left DOT                 // 结构体成员访问
+%left LBRACKET RBRACKET   // 数组下标
+%left LPAREN RPAREN       // 函数调用
+%right ASSIGN             // 赋值
 %nonassoc ELSE
 %nonassoc THEN
 
@@ -257,7 +258,9 @@ OptTag
 
 Tag
     : ID {
-        $$ = create_node("Tag", 0, @1.first_line); 
+        ast_node* id_node = create_node("ID", 0, @1.first_line);
+        id_node->val.str_value = strdup($1);  // 保存ID值
+        $$ = create_node("Tag", 1, @1.first_line, id_node); 
 
     }
     ;

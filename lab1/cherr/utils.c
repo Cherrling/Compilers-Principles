@@ -61,6 +61,7 @@ void print_ast(ast_node* node, int level) {
             strcmp(node->type, "Dec") == 0 ||
             strcmp(node->type, "VarDec") == 0 ||
             strcmp(node->type, "StmtList") == 0 ||
+            strcmp(node->type, "StructSpecifier") == 0 ||
             strcmp(node->type, "Stmt") == 0 ||
             strcmp(node->type, "Program") == 0 ||
             strcmp(node->type, "ExtDefList") == 0 ||
