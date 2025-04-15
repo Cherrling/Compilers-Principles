@@ -17,6 +17,10 @@ YFC = $(shell find ./ -name "*.y" | sed s/[^/]*\\.y/syntax.tab.c/)
 LFO = $(LFC:.c=.o)
 YFO = $(YFC:.c=.o)
 
+
+
+
+
 parser: syntax $(filter-out $(LFO),$(OBJS))
 	$(CC) -o parser $(filter-out $(LFO),$(OBJS)) -lfl -ly
 
@@ -33,7 +37,7 @@ syntax: lexical syntax-c
 # gcc -std=c99   -c -o tree.o tree.c
 # gcc -std=c99   -c -o main.o main.c
 # gcc -o parser ./tree.o ./syntax.tab.o ./main.o -lfl -ly
-# ./parser ../Test/test1.cmm
+# ./parser ../test/testtest1.cmm
 
 lexical: $(LFILE)
 	$(FLEX) -o $(LFC) $(LFILE)
@@ -50,26 +54,23 @@ syntax-c: $(YFILE)
 # 定义的一些伪目标
 .PHONY: clean test
 test:
-	./parser ../Test/1.cmm
-# ./parser ../Test/2.cmm
-# ./parser ../Test/3.cmm
-# ./parser ../Test/4.cmm
-# ./parser ../Test/5.cmm
-# ./parser ../Test/6.cmm
-# ./parser ../Test/7.cmm
-# ./parser ../Test/8.cmm
-# ./parser ../Test/9.cmm
-# ./parser ../Test/10.cmm
-# ./parser ../Test/11.cmm
-# ./parser ../Test/12.cmm
-# ./parser ../Test/13.cmm
-# ./parser ../Test/14.cmm
-# ./parser ../Test/15.cmm
-# ./parser ../Test/16.cmm
-# ./parser ../Test/17.cmm
-# ./parser ../Test/18.cmm
-# ./parser ../Test/19.cmm
-# ./parser ../Test/20.cmm
+	./parser ../test/test1.cmm
+	./parser ../test/test2.cmm
+	./parser ../test/test3.cmm
+	./parser ../test/test4.cmm
+	./parser ../test/test5.cmm
+	./parser ../test/test6.cmm
+	./parser ../test/test7.cmm
+	./parser ../test/test8.cmm
+	./parser ../test/test9.cmm
+	./parser ../test/test10.cmm
+	./parser ../test/test11.cmm
+	./parser ../test/test12.cmm
+	./parser ../test/test13.cmm
+	./parser ../test/test14.cmm
+	./parser ../test/test15.cmm
+	./parser ../test/test16.cmm
+	./parser ../test/test17.cmm
 
 clean:
 	rm -f parser lex.yy.c syntax.tab.c syntax.tab.h syntax.output

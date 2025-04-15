@@ -48,6 +48,7 @@ void printTree(Node *root,int number){
     if(root == NULL){
         return;
     }
+    // printf("yytext: %s\n",root->yytext);
     for(int i=0;i<number;i++)
     {
         printf(" ");

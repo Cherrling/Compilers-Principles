@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     //printTree(Root,0);
     if(error == 0)
     {
-        //printTree(Root,0);
+        printTree(Root,0);
         initHashtable();
         Program(Root);
         check_declar();
