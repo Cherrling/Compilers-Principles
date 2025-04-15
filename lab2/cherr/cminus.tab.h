@@ -88,7 +88,8 @@ extern int yydebug;
     DOT = 289,                     /* DOT  */
     NOT = 290,                     /* NOT  */
     RELOP = 291,                   /* RELOP  */
-    THEN = 292                     /* THEN  */
+    LOWER_THAN_ELSE = 292,         /* LOWER_THAN_ELSE  */
+    THEN = 293                     /* THEN  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -104,7 +105,7 @@ union YYSTYPE
     char* string;
     struct ast_node* node;
 
-#line 108 "cminus.tab.h"
+#line 109 "cminus.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

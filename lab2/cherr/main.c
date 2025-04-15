@@ -31,13 +31,13 @@ int main(int argc, char** argv) {
     yyparse();
 
     if (Err) {
-        return 1;
+        // return 1;
     }
 
 
     if (root != NULL) {
         // printf("\nAbstract Syntax Tree:\n");
-        print_ast(root, 0);
+        // print_ast(root, 0);
         initHashtable();
         Program(root);
         check_declar();

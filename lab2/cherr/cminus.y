@@ -61,6 +61,8 @@ void yyerror(const char *s);
 %left DOT                 // 结构体成员访问
 %left LBRACKET RBRACKET   // 数组下标
 %left LPAREN RPAREN       // 函数调用
+
+%nonassoc LOWER_THAN_ELSE 
 %nonassoc ELSE
 %nonassoc THEN
 
@@ -85,7 +87,6 @@ ExtDefList
     }
     | ExtDef ExtDefList { 
         $$ = create_node("ExtDefList", 2, @1.first_line, $1, $2); 
-        $$ -> val.int_value = 2;
     }
     ;
 
@@ -103,6 +104,10 @@ ExtDef
     | Specifier FunDec CompSt{
         $$=create_node("ExtDef", 3, @1.first_line, $1, $2, $3);
     } 
+    | Specifier FunDec SEMI {  // 添加函数声明的规则
+        ast_node* semi_node = create_node("SEMI", 0, @3.first_line);
+        $$ = create_node("ExtDef", 3, @1.first_line, $1, $2, semi_node);
+    }
     | Specifier error {
         printError('B', "Missing \";\""); // 打印错误消息
     }
@@ -115,9 +120,7 @@ ExtDecList
         $$=create_node("ExtDecList", 2, @1.first_line, $1,  $3);
 
     } 
-    | VarDec error ExtDecList{
-        printError('B', "text"); // 打印错误消息
-    }
+
 
 Specifier
     : TYPE { 
@@ -214,17 +217,27 @@ Stmt
         $$ = create_node("Stmt", 1, @1.first_line, $1); 
     }
     | RETURN Exp SEMI {
-        $$ = create_node("Stmt", 1, @1.first_line, $2); 
+        ast_node* return_node = create_node("RETURN", 0, @1.first_line);
+        ast_node* semi_node = create_node("SEMI", 0, @3.first_line);
+        $$ = create_node("Stmt", 3, @1.first_line, return_node, $2, semi_node); 
+    }
+    | IF LPAREN Exp RPAREN Stmt %prec LOWER_THAN_ELSE {
+        ast_node* if_node = create_node("IF", 0, @1.first_line);
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @4.first_line);
+        $$ = create_node("Stmt", 5, @1.first_line, if_node, lp_node, $3, rp_node, $5);
     }
     | IF LPAREN Exp RPAREN Stmt ELSE Stmt {
-        $$ = create_node("Stmt", 3, @1.first_line,  $3, $5, $7); 
+        ast_node* if_node = create_node("IF", 0, @1.first_line);
+        ast_node* lp_node = create_node("LP", 0, @2.first_line);
+        ast_node* rp_node = create_node("RP", 0, @4.first_line);
+        ast_node* else_node = create_node("ELSE", 0, @6.first_line);
+        $$ = create_node("Stmt", 7, @1.first_line, if_node, lp_node, $3, rp_node, $5, else_node, $7);
     }
     | WHILE LPAREN Exp RPAREN Stmt {
         $$ = create_node("Stmt", 2, @1.first_line, $3, $5); 
     }
-    | Exp error {
-        printError('B', "Missing \";\""); // 打印错误消息
-    }
+
 
 StructSpecifier
     : STRUCT OptTag LBRACE DefList RBRACE {
@@ -280,9 +293,6 @@ Def
         char msg[32]; // 定义错误信息缓冲区
         sprintf(msg, "Syntax error, near \'%c\'", yytext[0]); // 格式化错误消息
         printError('B', msg); // 打印错误消息
-    }
-    | Specifier DecList error {
-        printError('B',"Missing \";\""); // 打印错误消息
     }
     ;
 
@@ -342,25 +352,32 @@ Exp
         $$ = create_node("Exp", 3, @1.first_line, $1, plus_node, $3);
     }
     | Exp MINUS Exp {
-        $$ = create_node("minus",2 , @1.first_line, $1, $3);
+        ast_node* minus_node = create_node("MINUS", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, minus_node, $3);
     }
     | Exp TIMES Exp {
-        $$ = create_node("mul",2 , @1.first_line, $1, $3);
+        ast_node* times_node = create_node("TIMES", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, times_node, $3);
     }
     | Exp DIVIDE Exp {
-        $$ = create_node("div",2 , @1.first_line, $1, $3);
+        ast_node* divide_node = create_node("DIVIDE", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, divide_node, $3);
     }
     | Exp RELOP Exp {
-        $$ = create_node("RELOP",2 , @1.first_line, $1, $3);
+        ast_node* relop_node = create_node("RELOP", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, relop_node, $3);
     }     
     | Exp AND Exp {
-        $$ = create_node("AND",2 , @1.first_line, $1, $3);
+        ast_node* and_node = create_node("AND", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, and_node, $3);
     } 
     | Exp OR Exp {
-        $$ = create_node("OR",2 , @1.first_line, $1, $3);
+        ast_node* or_node = create_node("OR", 0, @2.first_line);
+        $$ = create_node("Exp", 3, @1.first_line, $1, or_node, $3);
     }     
-    | NOT Exp{
-        $$ = create_node("NOT",1 , @1.first_line, $2);
+    | NOT Exp {
+        ast_node* not_node = create_node("NOT", 0, @1.first_line);
+        $$ = create_node("Exp", 2, @1.first_line, not_node, $2);
     }
     | ID LPAREN RPAREN {
         ast_node* id_node = create_node("ID", 0, @1.first_line);
@@ -379,7 +396,7 @@ Exp
     | Exp LBRACKET Exp RBRACKET {
         ast_node* lb_node = create_node("LB", 0, @2.first_line);
         ast_node* rb_node = create_node("RB", 0, @4.first_line);
-        $$ = create_node("array_access", 4, @1.first_line, $1, lb_node, $3, rb_node);
+        $$ = create_node("Exp", 4, @1.first_line, $1, lb_node, $3, rb_node);
     }
     | LPAREN Exp RPAREN {
         ast_node* lp_node = create_node("LP", 0, @1.first_line);

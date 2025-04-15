@@ -10,7 +10,7 @@ scope sc_table[50];
 //散列函数
 //代码第7行的常数（0x3fff）确定了符号表的大小（即16384）
 unsigned int hash_pjw(char *name){
-    printf("hash_pjw:%s\n",name);
+    // printf("hash_pjw:%s\n",name);
 	unsigned int val = 0, i;
 	for(;*name;++name){
 		val = (val << 2) + *name;
@@ -36,7 +36,7 @@ void initHashtable(){
 
 void check_declar()
 {
-    printf("check_declar\n");
+    // printf("check_declar\n");
     for(int i=0;i<HASH_SIZE;i++)
     {
 		if(hashTable[i]!=NULL)
@@ -73,7 +73,7 @@ void enter_scope()
 
 void exit_scope()
 {
-    printf("exit_scope %d\n",current_id);
+    // printf("exit_scope %d\n",current_id);
     scope sc = sc_table[current_id];
     if(current_id == 0 ) {printf("scope error");}//debug
     current_id = sc.parent_id;
@@ -129,101 +129,53 @@ int insert(FieldList f)
 	return 0;
 }
 
-// FieldList search(char *name
-// ,int flag// flag=1:function flag =2: str_spe flag=0:变量 原因在于函数名和变量名可以一样
-// )
-// {
-// 	if(name == NULL){
-// 		return NULL;
-// 	}
-// 	unsigned int key;
-//     key = hash_pjw(name);
-// 	FieldList p=hashTable[key];
-// 	while(p!=NULL)
-//     {
-// 		if(strcmp(name,p->name)==0)
-//         {
-//             scope sc = sc_table[current_id];
-//             //printf("debug p:%d current:%d wno:%d\n",p->scope_id,current_id,sc.wno);
-//             //从内层往外层找
-//             for(int i=sc.wno-1;i>=0;i--)
-//             {
-//                 //printf("%d\n",sc.w[i]);
-//                 if(p->scope_id == sc.w[i])
-//                 {
-//                     //printf("name: %s flag: %d kind:%d\n",p->name,flag,p->type->kind);
-//                     //printSymbol();
-//                     //todo:array
-//                     if(flag != 2 && p->type->kind == STR_SPE)
-//                     {
-//                        // printf("debug\n");
-//                         return NULL;//与结构类型重名是不行的
-//                     }
-//                     // if(flag == 1 && p->type->kind == FUNCTION)
-//                     // return p;
-//                     // if(flag == 0 && p->type->kind == BASIC)
-//                     return p;
-
-//                 }
-//             }
-// 		}
-// 		key=(++key)%HASH_SIZE;
-// 		p=hashTable[key];
-// 	}
-// 	return NULL;
-// }
-
-FieldList search(char *name, int flag)
+FieldList search(char *name
+,int flag// flag=1:function flag =2: str_spe flag=0:变量 原因在于函数名和变量名可以一样
+)
 {
-    if(name == NULL) {
-        return NULL;
-    }
-    unsigned int key = hash_pjw(name);
-    FieldList p = hashTable[key];
-    
-    while(p != NULL) {
-        if(strcmp(name, p->name) == 0) {
+	if(name == NULL){
+		return NULL;
+	}
+	unsigned int key;
+    key = hash_pjw(name);
+	FieldList p=hashTable[key];
+	while(p!=NULL)
+    {
+		if(strcmp(name,p->name)==0)
+        {
             scope sc = sc_table[current_id];
-            // 从内层往外层找
-            for(int i = sc.wno-1; i >= 0; i--) {
-                if(p->scope_id == sc.w[i]) {
-                    // 如果是查找变量(flag=0)
-                    if(flag == 0) {
-                        // 不能与结构体类型重名
-                        if(p->type->kind == STR_SPE) {
-                            return NULL;
-                        }
-                        // 变量查找
-                        if(p->type->kind == BASIC || 
-                           p->type->kind == ARRAY || 
-                           p->type->kind == STRUCTURE) {
-                            return p;
-                        }
+            //printf("debug p:%d current:%d wno:%d\n",p->scope_id,current_id,sc.wno);
+            //从内层往外层找
+            for(int i=sc.wno-1;i>=0;i--)
+            {
+                //printf("%d\n",sc.w[i]);
+                if(p->scope_id == sc.w[i])
+                {
+                    //printf("name: %s flag: %d kind:%d\n",p->name,flag,p->type->kind);
+                    //printSymbol();
+                    //todo:array
+                    if(flag != 2 && p->type->kind == STR_SPE)
+                    {
+                       // printf("debug\n");
+                        return NULL;//与结构类型重名是不行的
                     }
-                    // 如果是查找函数(flag=1)
-                    else if(flag == 1) {
-                        if(p->type->kind == FUNCTION) {
-                            return p;
-                        }
-                    }
-                    // 如果是查找结构体类型(flag=2)
-                    else if(flag == 2) {
-                        if(p->type->kind == STR_SPE) {
-                            return p;
-                        }
-                    }
+                    // if(flag == 1 && p->type->kind == FUNCTION)
+                    // return p;
+                    // if(flag == 0 && p->type->kind == BASIC)
+                    return p;
+
                 }
             }
-        }
-        key = (++key) % HASH_SIZE;
-        p = hashTable[key];
-    }
-    return NULL;
+		}
+		key=(++key)%HASH_SIZE;
+		p=hashTable[key];
+	}
+	return NULL;
 }
 
 FieldList ifexist(char *name,int id)
 {
-    printf("ifexist:%s\n",name);
+    // printf("ifexist:%s\n",name);
 	if(name == NULL){
 		return NULL;
 	}
@@ -258,7 +210,7 @@ void printSymbol(){
 }
 
 int TypeEqual(Type t1,Type t2){
-    printf("TypeEqual\n");
+    // printf("TypeEqual\n");
     //printf("kind:%d %d\n",t1->kind,t2->kind);
     //printf("debug");
     //if(t1 == NULL) printf("1\n");
@@ -310,7 +262,7 @@ int TypeEqual(Type t1,Type t2){
         }
         return 1;
     }
-    printf("debug\n");
+    // printf("debug\n");
     return 0;
 }
 
@@ -331,7 +283,7 @@ void Program(ast_node *root){
 void ExtDefList(ast_node *node)
 {
     if(node == NULL )return;
-    printf("ExtDefList:%s children: %d\n",node->name, node->childno);
+    // printf("ExtDefList:%s children: %d\n",node->name, node->childno);
     if(node->childno ==2)
     {
         ExtDef(node->child[0]);
@@ -346,7 +298,7 @@ void ExtDefList(ast_node *node)
 //             | Specifier FunDec SEMI  
 void ExtDef(ast_node *node)
 {
-    printf("ExtDef:%s\n",node->val.str_value);
+    // printf("ExtDef:%s\n",node->val.str_value);
     //函数返回值类型
     Type specifier = Specifier(node->child[0]);
 
@@ -373,7 +325,7 @@ void ExtDef(ast_node *node)
             //printf("11");
         FunDec(node->child[1],specifier,DECLA);
         }
-        printf("debug123\n");
+        // printf("debug123\n");
         exit_scope();
     }
 }       
@@ -383,7 +335,7 @@ void ExtDef(ast_node *node)
 //             ;
 void FunDec(ast_node *node,Type spec,int state)
 {
-    printf("FunDec:%s children: %d\n",node->name,node->childno);
+    // printf("FunDec:%s children: %d\n",node->name,node->childno);
     //ID
     FieldList field = (FieldList)malloc(sizeof(FieldList_));
     field->name = node->child[0]->val.str_value;
@@ -456,7 +408,7 @@ void FunDec(ast_node *node,Type spec,int state)
 void CompSt(ast_node *node,Type ftype)
 {
 
-    printf("CompSt:%s children: %d\n",node->name,node->childno);
+    // printf("CompSt:%s children: %d\n",node->name,node->childno);
     enter_scope();
     DefList(node->child[1]);
     ////
@@ -467,10 +419,10 @@ void CompSt(ast_node *node,Type ftype)
     while(stmtlist!=NULL)
     {
         Stmt(stmtlist->child[0],ftype);
-        printf("finish stmt\n");
+        // printf("finish stmt\n");
         stmtlist = stmtlist->child[1];
     }
-    printf("finish stmtlist\n");
+    // printf("finish stmtlist\n");
     exit_scope();
 }
 
@@ -484,11 +436,11 @@ void CompSt(ast_node *node,Type ftype)
 //语句  传进来ftype是因为返回值
 void Stmt(ast_node *node,Type ftype)
 {
-    printf("Stmt:%s children: %d lineno: %d\n",node->name,node->childno,node->lineno);
-    for (int i=0;i<node->childno;i++)
-    {
-        printf("child:%s\n",node->child[i]->name);
-    }
+    // printf("Stmt:%s children: %d lineno: %d\n",node->name,node->childno,node->lineno);
+    // for (int i=0;i<node->childno;i++)
+    // {
+    //     printf("child:%s\n",node->child[i]->name);
+    // }
 
     if (strcmp(node->child[0]->name, "CompSt") == 0)
     {
@@ -496,12 +448,13 @@ void Stmt(ast_node *node,Type ftype)
     }
     else if (strcmp(node->child[0]->name, "Exp") == 0)
     {//Exp SEMI 
-        printf("Exp SEMI\n");
+        // printf("Exp SEMI\n");
         Exp(node->child[0]);
     }
     else if (strcmp(node->child[0]->name, "RETURN") == 0)
     {
         Type rtype = Exp(node->child[1]);
+        // printf("type:%d\n",rtype->kind);
         if(TypeEqual(ftype,rtype)== 0)
         {
             if(rtype !=NULL)//可能有问题
@@ -530,7 +483,7 @@ void Stmt(ast_node *node,Type ftype)
 void DefList(ast_node *node)
 {   
     if (node == NULL) return;
-    printf("DefList:%s children: %d\n",node->name,node->childno);
+    // printf("DefList:%s children: %d\n",node->name,node->childno);
     if(node !=NULL)
     {
         Def(node->child[0]);
@@ -543,7 +496,7 @@ void DefList(ast_node *node)
 //         ;
 void Def(ast_node *node)
 {
-    printf("Def:%s\n",node->name);
+    // printf("Def:%s\n",node->name);
     Type spec = Specifier(node->child[0]);
     DecList(node->child[1],spec);
 }
@@ -553,7 +506,7 @@ void Def(ast_node *node)
 //         ;
 void DecList(ast_node *node,Type spec)
 {
-    printf("DecList:%s children: %d\n",node->name,node->childno);
+    // printf("DecList:%s children: %d\n",node->name,node->childno);
     if(node !=NULL)
     {
         Dec(node->child[0],spec);
@@ -569,10 +522,10 @@ void DecList(ast_node *node,Type spec)
 //         ;
 void Dec(ast_node *node,Type spec)
 {
-    printf("Dec:%s children: %d\n",node->name,node->childno);
+    // printf("Dec:%s children: %d\n",node->name,node->childno);
     if(node == NULL) return;
     FieldList field = VarDec(node->child[0],spec);
-    printf("field:%s\n",field->name);
+    // printf("field:%s\n",field->name);
     if(node->childno == 3)
     {
         // 如果在struct内部 则要报错 但我这里分开了
@@ -581,22 +534,22 @@ void Dec(ast_node *node,Type spec)
         // 这里的类型匹配考虑的是初始化的时候
 
         Type right = Exp(node->child[2]);
-        printf("debug:%d  t1:%d t2:%d\n",node->child[2]->lineno,right->kind,spec->kind);
+        // printf("debug:%d  t1:%d t2:%d\n",node->child[2]->lineno,right->kind,spec->kind);
         if(TypeEqual(field->type,right) == 0)
         {
 			printf("Error type 5 at Line %d: mismatch in assignment.\n",node->lineno);
         }
     }
-    printf("debug:%d  t1:%d t2:%d\n",node->child[0]->lineno,field->type->kind,spec->kind);
+    // printf("debug:%d  t1:%d t2:%d\n",node->child[0]->lineno,field->type->kind,spec->kind);
     if(ifexist(field->name,field->scope_id)!=NULL)
     {
         //函数内部
         printf("Error type 3 at Line %d: Redefined variable %s.\n", node->lineno, field->name);
     }
     else{
-        printf("to insert\n");
+        // printf("to insert\n");
         insert(field);
-        printf("insert:%s\n",field->name);
+        // printf("insert:%s\n",field->name);
     }
 }
 
@@ -623,14 +576,14 @@ void Dec(ast_node *node,Type spec)
 //         ;
 Type Exp(ast_node *node)
 {
-    printf("Exp:%s %d\n",node->name,node->lineno);
+    // printf("Exp:%s %d\n",node->name,node->lineno);
     if(node == NULL) return NULL;
     if (node->childno ==3 && strcmp(node->child[1]->name, "ASSIGN") == 0)
     {   
         ast_node * exp1 = node->child[0];
         ast_node * exp2 = node->child[2];
-        printf("Exp1:%s\n",exp1->name);
-        printf("Exp2:%s\n",exp2->name);
+        // printf("Exp1:%s\n",exp1->name);
+        // printf("Exp2:%s\n",exp2->name);
         //赋值号左边出现一个只有右值的表达式。
         //ID | Exp DOT ID  |  Exp LB Exp RB
         if(exp1->childno == 1 && !(strcmp(exp1->child[0]->name, "ID") == 0) )
@@ -672,7 +625,7 @@ Type Exp(ast_node *node)
         Type t1 = Exp(exp1);
         Type t2 = Exp(exp2);
 
-        printf("fuck\n");
+        // printf("fuck\n");
         if(TypeEqual(t1,t2) == 0)
         {
             if(t1!=NULL) //todo:可能有问题
@@ -688,19 +641,19 @@ Type Exp(ast_node *node)
         }
     }
     // +-*/
-    printf("fuck\n");
+    // printf("fuck\n");
 
     if (node->childno ==3 &&(
         (strcmp(node->child[1]->name, "PLUS") == 0) || (strcmp(node->child[1]->name, "MINUS") == 0) || (strcmp(node->child[1]->name, "STAR") == 0) || (strcmp(node->child[1]->name, "DIV") == 0))
     )
     {
-        printf("shit\n");
+        // printf("shit\n");
         
         ast_node * exp1 = node->child[0];
         ast_node * exp2 = node->child[2];
         Type t1 = Exp(exp1);
         Type t2 = Exp(exp2);
-        printf("debug:%s  t1:%s t2:%s\n",node->child[1]->name,exp1->val.int_value,exp2->name);
+        // printf("debug:%s  t1:%s t2:%s\n",node->child[1]->name,exp1->val.int_value,exp2->name);
         if (TypeEqual(t1, t2) == 0)
         {
             printf("Error type 7 at Line %d: mismatch in operands.\n", node->lineno);
@@ -751,13 +704,13 @@ Type Exp(ast_node *node)
 
     if(strcmp(node->child[0]->name, "ID") == 0)
     {
-        printf("ID LP Args RP\n");
+        // printf("ID LP Args RP\n");
 //         | ID LP Args RP     a(b)
 //         | ID LP RP          a()
         //找函数名
         FieldList field = search(node->child[0]->val.str_value,1);
 
-        printf("debug:%d",node->child[0]->lineno);
+        // printf("debug:%d\n",node->child[0]->lineno);
         //todo:解决函数与变量同名问题
         if(field == NULL)
         {
@@ -847,6 +800,7 @@ Type Exp(ast_node *node)
             return NULL;
         }
         Type t2 = Exp(node->child[2]);
+        
         if( !(t2->kind ==BASIC && t2->u.basic == INT_TYPE))
         {
             printf("Error type 12 at Line %d: there is not an integer in [" "].\n", node->lineno);
@@ -911,7 +865,7 @@ void ExtDecList(ast_node * node,Type spec)
 //将变量返回 无需做检查
 FieldList VarDec(ast_node *node,Type spec)
 {
-    printf("VarDec:%s\n",node->name);
+    // printf("VarDec:%s\n",node->name);
     ast_node * temp = node;
     int num =0 ;
     // VarDec 循环到最后的ID得到标识名
@@ -923,7 +877,6 @@ FieldList VarDec(ast_node *node,Type spec)
     FieldList field = (FieldList)malloc(sizeof(FieldList_));
     field->scope_id = current_id;
     field->name = temp->child[0]->val.str_value;
-
 
     //num = 0
     if(strcmp(node->child[0]->name,"ID") == 0)
@@ -940,7 +893,7 @@ FieldList VarDec(ast_node *node,Type spec)
         ti->kind = ARRAY;
         //值每一维都要递进
         // TODO: INT8 INT16
-        ti->u.array.size = atoi(temp2->child[2]->val.str_value);
+        ti->u.array.size = temp2->child[2]->val.int_value;
         temp2 = temp2->child[0];
         //类型每一维都要递进
         ti->u.array.elem = last;
@@ -957,7 +910,7 @@ FieldList VarDec(ast_node *node,Type spec)
 //             ;
 Type Specifier(ast_node *node)
 {
-    printf("Specifier:%s\n",node->name);
+    // printf("Specifier:%s\n",node->name);
     // TYPE
     if(strcmp(node->child[0]->name,"TYPE")==0)
     {

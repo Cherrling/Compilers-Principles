@@ -105,7 +105,9 @@ void print_ast(ast_node* node, int level) {
     // 递归打印子节点
     if (node->child) {
         for (int i = 0; i < node->childno; i++) {
-            print_ast(node->child[i], level + 1);
+            if (node->child[i]) {  // 检查子节点不为 NULL
+                print_ast(node->child[i], level + 1);
+            }
         }
     }
 }

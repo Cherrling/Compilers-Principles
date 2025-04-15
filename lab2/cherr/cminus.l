@@ -69,7 +69,12 @@ CHANGELINE [\n]
 "&&"        { return AND; } 
 "."         { return DOT; } 
 "!"         { return NOT; } 
-
+">"         { return RELOP; }
+"<"         { return RELOP; }
+">="        { return RELOP; }
+"<="        { return RELOP; }
+"=="        { return RELOP; }
+"!="        { return RELOP; }
 
 {IGNORE} {} 
 
