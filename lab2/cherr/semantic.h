@@ -51,6 +51,7 @@ typedef struct FieldList_ {
 	Type type;//域的类型
 	FieldList tail;//下一个域
 	int scope_id;//作用域
+	FieldList hash_next;  // 添加用于哈希链的指针
 }FieldList_;
 
 void enter_scope();

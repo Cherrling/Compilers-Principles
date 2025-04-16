@@ -7,19 +7,31 @@ scope sc_table[50];
 
 
 
-//散列函数
-//代码第7行的常数（0x3fff）确定了符号表的大小（即16384）
-unsigned int hash_pjw(char *name){
-    // printf("hash_pjw:%s\n",name);
-	unsigned int val = 0, i;
-	for(;*name;++name){
-		val = (val << 2) + *name;
-		if(i=val & ~0x3fff){
-			val = (val ^ (i>>12)) & 0x3fff;
-		}
-		return val % HASH_SIZE;
-	}
+// //散列函数
+// //代码第7行的常数（0x3fff）确定了符号表的大小（即16384）
+// unsigned int hash_pjw(char *name){
+//     // printf("hash_pjw:%s\n",name);
+// 	unsigned int val = 0, i;
+// 	for(;*name;++name){
+// 		val = (val << 2) + *name;
+// 		if(i=val & ~0x3fff){
+// 			val = (val ^ (i>>12)) & 0x3fff;
+// 		}
+// 		return val % HASH_SIZE;
+// 	}
+// }
+
+// 哈希函数 - 使用链地址法处理碰撞
+unsigned int hash_pjw(char *name) {
+    unsigned int hash = 0;
+    while (*name) {
+        hash = (hash * 31 + *name) % HASH_SIZE;  // 使用31作为乘数
+        name++;
+    }
+    return hash;
 }
+
+
 
 void initHashtable(){
 	for(int i=0; i<HASH_SIZE; i++){
@@ -79,99 +91,168 @@ void exit_scope()
     current_id = sc.parent_id;
 }
 
-int insert(FieldList f)
-{
-	if(f==NULL || f->name == NULL)
-		return 0;
-    //if(f->scope_id != current_id) printf("debugdebug\n");//当前语句块
-	unsigned int key;
-    //printf("d:%s\n",f->name);
-	key = hash_pjw(f->name);
-    //如果是函数 要注意原先存的如果是声明的要覆盖掉 当然,函数都在最外层定义故不用考虑语句块
-    if(f->type->kind != FUNCTION)
-    {
-        //printf("debug");
-        while(1)
-        {
-            if(hashTable[key] == NULL)
-            {
-                hashTable[key] = f;
-                return 1;
-            }
-            key = (++key)%HASH_SIZE;
-        }
-    }
-    else
-    {
-        while(1)
-        {
-            if(hashTable[key] == NULL)
-            {
-                hashTable[key] = f;
-                return 1;
-            }
-            if(strcmp(hashTable[key]->name,f->name)==0)
-            {
-                    //printf("debug");
-                    //这里判断除了DEFIN 其他其实是多余的
-                if(TypeEqual(hashTable[key]->type,f->type)==1  
-                    && hashTable[key]->type->u.function.state == DECLA
-                    && f->type->u.function.state == DEFIN)
-                {
-                    hashTable[key] = f;
-                    return 1;
-                }   
-            }
-            key = (++key)%HASH_SIZE;
-        }
+// int insert(FieldList f)
+// {
+// 	if(f==NULL || f->name == NULL)
+// 		return 0;
+//     //if(f->scope_id != current_id) printf("debugdebug\n");//当前语句块
+// 	unsigned int key;
+//     //printf("d:%s\n",f->name);
+// 	key = hash_pjw(f->name);
+//     //如果是函数 要注意原先存的如果是声明的要覆盖掉 当然,函数都在最外层定义故不用考虑语句块
+//     if(f->type->kind != FUNCTION)
+//     {
+//         //printf("debug");
+//         while(1)
+//         {
+//             if(hashTable[key] == NULL)
+//             {
+//                 hashTable[key] = f;
+//                 return 1;
+//             }
+//             key = (++key)%HASH_SIZE;
+//         }
+//     }
+//     else
+//     {
+//         while(1)
+//         {
+//             if(hashTable[key] == NULL)
+//             {
+//                 hashTable[key] = f;
+//                 return 1;
+//             }
+//             if(strcmp(hashTable[key]->name,f->name)==0)
+//             {
+//                     //printf("debug");
+//                     //这里判断除了DEFIN 其他其实是多余的
+//                 if(TypeEqual(hashTable[key]->type,f->type)==1  
+//                     && hashTable[key]->type->u.function.state == DECLA
+//                     && f->type->u.function.state == DEFIN)
+//                 {
+//                     hashTable[key] = f;
+//                     return 1;
+//                 }   
+//             }
+//             key = (++key)%HASH_SIZE;
+//         }
 
+//     }
+// 	return 0;
+// }
+
+// FieldList search(char *name
+//                 ,int flag// flag=1:function flag =2: str_spe flag=0:变量 原因在于函数名和变量名可以一样
+//                 )
+// {
+// 	if(name == NULL){
+// 		return NULL;
+// 	}
+// 	unsigned int key;
+//     key = hash_pjw(name);
+// 	FieldList p=hashTable[key];
+// 	while(p!=NULL)
+//     {
+// 		if(strcmp(name,p->name)==0)
+//         {
+//             scope sc = sc_table[current_id];
+//             //printf("debug p:%d current:%d wno:%d\n",p->scope_id,current_id,sc.wno);
+//             //从内层往外层找
+//             for(int i=sc.wno-1;i>=0;i--)
+//             {
+//                 //printf("%d\n",sc.w[i]);
+//                 if(p->scope_id == sc.w[i])
+//                 {
+//                     //printf("name: %s flag: %d kind:%d\n",p->name,flag,p->type->kind);
+//                     //printSymbol();
+//                     //todo:array
+//                     if(flag != 2 && p->type->kind == STR_SPE)
+//                     {
+//                        // printf("debug\n");
+//                         return NULL;//与结构类型重名是不行的
+//                     }
+//                     // if(flag == 1 && p->type->kind == FUNCTION)
+//                     // return p;
+//                     // if(flag == 0 && p->type->kind == BASIC)
+//                     return p;
+
+//                 }
+//             }
+// 		}
+// 		key=(++key)%HASH_SIZE;
+// 		p=hashTable[key];
+// 	}
+// 	return NULL;
+// }
+
+
+// 修改插入函数，处理碰撞
+int insert(FieldList f) {
+    if (f == NULL || f->name == NULL) {
+        return 0;
     }
-	return 0;
+
+    unsigned int hash = hash_pjw(f->name);
+    FieldList current = hashTable[hash];
+
+    // 函数特殊处理
+    if (f->type->kind == FUNCTION) {
+        while (current != NULL) {
+            if (strcmp(current->name, f->name) == 0) {
+                // 处理函数声明和定义
+                if (current->type->u.function.state == DECLA &&
+                    f->type->u.function.state == DEFIN) {
+                    current->type = f->type;
+                    return 1;
+                }
+                return 0;  // 重复定义
+            }
+            current = current->hash_next;  // 使用hash_next字段
+        }
+    } else {
+        // 变量和结构体处理
+        while (current != NULL) {
+            if (strcmp(current->name, f->name) == 0 && 
+                current->scope_id == f->scope_id) {        // 只检查同一作用域是否重定义
+                return 0;  // 重复定义
+            }
+            current = current->hash_next;
+        }
+    }
+
+    // 头插法插入新节点
+    f->hash_next = hashTable[hash];
+    hashTable[hash] = f;
+    return 1;
 }
 
-FieldList search(char *name
-,int flag// flag=1:function flag =2: str_spe flag=0:变量 原因在于函数名和变量名可以一样
-)
-{
-	if(name == NULL){
-		return NULL;
-	}
-	unsigned int key;
-    key = hash_pjw(name);
-	FieldList p=hashTable[key];
-	while(p!=NULL)
-    {
-		if(strcmp(name,p->name)==0)
-        {
-            scope sc = sc_table[current_id];
-            //printf("debug p:%d current:%d wno:%d\n",p->scope_id,current_id,sc.wno);
-            //从内层往外层找
-            for(int i=sc.wno-1;i>=0;i--)
-            {
-                //printf("%d\n",sc.w[i]);
-                if(p->scope_id == sc.w[i])
-                {
-                    //printf("name: %s flag: %d kind:%d\n",p->name,flag,p->type->kind);
-                    //printSymbol();
-                    //todo:array
-                    if(flag != 2 && p->type->kind == STR_SPE)
-                    {
-                       // printf("debug\n");
-                        return NULL;//与结构类型重名是不行的
-                    }
-                    // if(flag == 1 && p->type->kind == FUNCTION)
-                    // return p;
-                    // if(flag == 0 && p->type->kind == BASIC)
-                    return p;
+// 修改查找函数
+FieldList search(char *name, int flag) {
+    if (name == NULL) {
+        return NULL;
+    }
 
+    unsigned int hash = hash_pjw(name);
+    FieldList current = hashTable[hash];
+
+    while (current != NULL) {
+        if (strcmp(name, current->name) == 0) {
+            scope sc = sc_table[current_id];
+            // 检查作用域
+            for (int i = sc.wno - 1; i >= 0; i--) {
+                if (current->scope_id == sc.w[i]) {
+                    if (flag != 2 && current->type->kind == STR_SPE) {
+                        return NULL;
+                    }
+                    return current;
                 }
             }
-		}
-		key=(++key)%HASH_SIZE;
-		p=hashTable[key];
-	}
-	return NULL;
+        }
+        current = current->hash_next;
+    }
+    return NULL;
 }
+
 
 FieldList ifexist(char *name,int id)
 {
