@@ -37,12 +37,13 @@ struct InterCode_{
 };
 
 void translate_print_stdout();
+void translate_print(FILE* f);
 void insert_intercode(InterCode it);
 Operand new_temp();
 Operand new_label();
 int get_size(Type type);
 int get_offset(Type return_type, struct Node* after);
-void translate2ir(struct Node* now);
+void translate2ir(struct Node* now, FILE* F);
 void translate_ExtDef(struct Node* now);
 void translate_FunDec(struct Node* now);
 void translate_CompSt(struct Node* now);

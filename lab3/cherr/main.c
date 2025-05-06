@@ -14,7 +14,7 @@ extern int yyparse (void);
 extern void yyrestart (FILE *input_file);
 
 int main(int argc, char** argv) {
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: %s <input_file>\n", argv[0]);
         return 1;
     }
@@ -22,6 +22,11 @@ int main(int argc, char** argv) {
     yyin = fopen(argv[1], "r");
     if (!yyin) {
         perror("Failed to open input file");
+        return 1;
+    }
+    FILE* f2=fopen(argv[2],"w+");
+    if (!f2) {
+        perror(argv[2]);
         return 1;
     }
     yylineno = 1;
@@ -33,7 +38,7 @@ int main(int argc, char** argv) {
         printf("\n=====================\n\n");
         printf("File: %s\n\n", argv[1]);
         Program(head);
-        translate2ir(head);
+        translate2ir(head, f2);
     }
     return 0;
 }

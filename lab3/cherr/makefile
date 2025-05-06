@@ -28,8 +28,8 @@ syntax-c: $(YFILE)
 
 .PHONY: clean test
 test: cminus
-	-./cminus test1.cminus
-	-./cminus test2.cminus 
+	-./cminus test1.cminus test1.ir
+	-./cminus test2.cminus test2.ir
 
 clean:
 	rm -f cminus lex.yy.c syntax.tab.c syntax.tab.h syntax.output

@@ -167,7 +167,7 @@ Operand new_temp() {
     Operand now = (Operand)malloc(sizeof(struct Operand_));
     now -> kind = TEMP;
     now -> u_int = temp_num;
-    now -> u_char = "Youngsc\0";
+    now -> u_char = "what\0";
     temp_num++;
     return now;
 }

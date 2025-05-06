@@ -8,6 +8,147 @@ InterCode in_now = NULL;
 extern int temp_num;
 int intercode_num;
 
+void translate_print(FILE* f) {
+    InterCode temp = in_head;
+    int judge_is_null = 0;
+    int a = 0;
+    // printf("%d %d\n",lab_num,temp_num);
+    while (temp != NULL) {
+        // printf("%d ",temp -> kind);
+        if (temp -> kind == ILABEL) {
+            fprintf(f,"LABEL label");
+            fprintf(f, "%d ", temp -> u.ulabel.op -> u_int);
+            fprintf(f, ":");
+        } else if (temp -> kind == IFUNCTION) {
+            fprintf(f, "FUNCTION ");
+            fprintf(f, "%s ", temp -> u.ulabel.op -> u_char);
+            fprintf(f, ":");
+        } else if (temp -> kind == ASSIGN){
+            Operand temp1 = temp -> u.uassign.op1;
+            Operand temp2 = temp -> u.uassign.op2;
+            if (temp1 == NULL || temp2 == NULL) judge_is_null = 1;
+            else if (temp1 -> kind == ADDRESS&&temp2 -> kind == ADDRESS){
+                fprintf(f, "*t%d", temp1 -> u_int);
+                fprintf(f, " := ");
+                fprintf(f, "*t%d", temp2 -> u_int);
+            } else if (temp2 -> kind == ADDRESS) {
+                fprintf(f, "t%d", temp1 -> u_int);
+                fprintf(f, " := ");
+                fprintf(f, "*t%d", temp2 -> u_int);
+            } else if (temp1 -> kind == ADDRESS){
+                fprintf(f, "&t%d", temp1 -> u_int);
+                fprintf(f, " := ");
+                if (temp2 -> kind == CONSTANT) fprintf(f, "#%d", temp2 -> u_int);
+                else fprintf(f, "t%d", temp2 -> u_int);
+            } else {
+                fprintf(f, "t%d", temp1 -> u_int);
+                fprintf(f, " := ");
+                if (temp2 -> kind == CONSTANT) fprintf(f, "#%d", temp2 -> u_int);
+                else fprintf(f, "t%d", temp2 -> u_int);
+            }
+        } else if (temp -> kind == ADD || temp -> kind == SUB 
+                 ||temp -> kind == MUL || temp -> kind == DIV) {
+            Operand temp1 = temp -> u.ubinop.result;
+            Operand temp2 = temp -> u.ubinop.op1;
+            Operand temp3 = temp -> u.ubinop.op2;
+            if (temp1 != NULL) {
+                fprintf(f, "t%d", temp1 -> u_int);
+                fprintf(f, " := ");
+                if (temp2 -> kind == CONSTANT) fprintf(f, "#%d", temp2 -> u_int);
+                else fprintf(f, "t%d", temp2 -> u_int);
+                if (temp -> kind == ADD) fprintf(f, " + ");
+                else if (temp -> kind == SUB) fprintf(f, " - ");
+                else if (temp -> kind == MUL) fprintf(f, " * ");
+                else if (temp -> kind == DIV) fprintf(f, " / ");
+                if (temp3 -> kind == CONSTANT) fprintf(f, "#%d", temp3 -> u_int);
+                else fprintf(f, "t%d", temp3 -> u_int);
+            }
+        } else if (temp -> kind == ADDRASS2){
+            Operand temp1 = temp -> u.uassign.op1;
+            Operand temp2 = temp -> u.uassign.op2;
+            fprintf(f, "t%d", temp1 -> u_int);
+            fprintf(f, " := ");
+            fprintf(f, "*t%d", temp2 -> u_int);
+        } else if (temp -> kind == ADDRASS3) {
+            Operand temp1 = temp -> u.uassign.op1;
+            Operand temp2 = temp -> u.uassign.op2;
+            fprintf(f, "*t%d", temp1 -> u_int);
+            fprintf(f, " := ");
+            if (temp2 -> kind == CONSTANT) fprintf(f, "#%d", temp2 -> u_int);
+            else fprintf(f, "t%d", temp2 -> u_int);
+        } else if (temp -> kind == ADDRASS1) {
+            Operand temp1 = temp -> u.uassign.op1;
+            Operand temp2 = temp -> u.uassign.op2;
+            fprintf(f, "t%d", temp1 -> u_int);
+            fprintf(f, " := ");
+            fprintf(f, "&t%d", temp2 -> u_int);
+        } else if (temp -> kind == GOTO) {
+            fprintf(f, "GOTO label");
+            fprintf(f, "%d", temp -> u.ulabel.op -> u_int);
+        } else if (temp -> kind == IF ) {
+            Operand temp1 = temp -> u.uif .x;
+            Operand temp2 = temp -> u.uif .y;
+            Operand temp3 = temp -> u.uif .z;
+            Operand re = temp -> u.uif .relop;
+            fprintf(f, "IF  ");
+            if (temp1 -> kind == CONSTANT) fprintf(f, "#%d", temp1 -> u_int);
+            else if (temp1 -> kind == ADDRESS) fprintf(f, "*t%d", temp1 -> u_int);
+            else fprintf(f, "t%d", temp1 -> u_int);
+
+            if (re -> u_int == 0) fprintf(f, "  ==  ");
+            else if (re -> u_int == 1) fprintf(f, " != ");
+            else if (re -> u_int == 2) fprintf(f, " < ");
+            else if (re -> u_int == 3) fprintf(f, " > ");
+            else if (re -> u_int == 4) fprintf(f, " <= ");
+            else if (re -> u_int == 5) fprintf(f, " >= ");
+
+            if (temp2 -> kind == CONSTANT) fprintf(f, "#%d", temp2 -> u_int);
+            else if (temp2 -> kind == ADDRESS) fprintf(f, "*t%d", temp2 -> u_int);
+            else fprintf(f, "t%d", temp2 -> u_int);
+            fprintf(f, " GOTO label");
+            fprintf(f, "%d", temp3 -> u_int);
+        } else if (temp -> kind == RETURN) {
+            fprintf(f, "RETURN ");
+            if (temp -> u.ulabel.op -> kind == CONSTANT) fprintf(f, "#%d", temp -> u.ulabel.op -> u_int);
+            else fprintf(f, "t%d", temp -> u.ulabel.op -> u_int);
+        } else if (temp -> kind == DEC) {
+            fprintf(f, "DEC ");
+            fprintf(f, "t%d ", temp -> u.udec.op -> u_int);
+            fprintf(f, "%d", temp -> u.udec.size);
+        } else if (temp -> kind == ARG){
+            fprintf(f, "ARG ");
+            if (temp -> u.ulabel.op -> kind == CONSTANT) fprintf(f, "#%d", temp -> u.ulabel.op -> u_int);
+            else if (temp -> u.ulabel.op -> kind == ADDRESS) fprintf(f, "&t%d", temp -> u.ulabel.op -> u_int);
+            else if (temp -> u.ulabel.op -> kind == WADDRESS) fprintf(f, "*t%d", temp -> u.ulabel.op -> u_int);
+            else fprintf(f, "t%d", temp -> u.ulabel.op -> u_int);
+        } else if (temp -> kind == CALL){
+            Operand temp1 = temp -> u.uassign.op1;
+            Operand temp2 = temp -> u.uassign.op2;
+            if (temp1!=NULL) fprintf(f, "t%d := ", temp1 -> u_int);
+            else{
+                Operand temp0 = new_temp();
+                fprintf(f,"t%d := ", temp0 -> u_int);
+            }
+            fprintf(f, "CALL ");
+            fprintf(f, "%s", temp2 -> u_char);
+        } else if (temp -> kind == PARAM){
+            fprintf(f, "PARAM ");
+            if (temp -> u.ulabel.op -> kind == CONSTANT) fprintf(f, "#%d", temp -> u.ulabel.op -> u_int);
+            else fprintf(f, "t%d", temp -> u.ulabel.op -> u_int);
+        } else if (temp -> kind == READ){
+            fprintf(f, "READ ");
+            if (temp -> u.ulabel.op -> kind == CONSTANT) fprintf(f, "#%d", temp -> u.ulabel.op -> u_int);
+            else fprintf(f, "t%d",temp -> u.ulabel.op -> u_int);
+        } else if (temp -> kind == WRITE){
+            fprintf(f, "WRITE ");
+            if (temp -> u.ulabel.op -> kind == CONSTANT) fprintf(f, "#%d", temp -> u.ulabel.op -> u_int);
+            else fprintf(f, "t%d", temp -> u.ulabel.op -> u_int);
+        }
+        if (!judge_is_null) fprintf(f, "\n");
+        else judge_is_null = 0;
+        temp = temp -> next;
+    }
+}
 void translate_print_stdout() {
     InterCode temp = in_head;
     int judge_is_null = 0;
@@ -224,7 +365,7 @@ int get_offset(Type return_type, struct Node* after) {
     }
 }
 
-void translate2ir(struct Node* now) {
+void translate2ir(struct Node* now, FILE* F) {
     // printf("Program\n");
     if (interim_is_error == 1) return;
     struct Node* child = now -> child;
@@ -236,6 +377,8 @@ void translate2ir(struct Node* now) {
     if (interim_is_error == 0) {
 
         translate_print_stdout();
+        translate_print(F);
+
 
 
     }
